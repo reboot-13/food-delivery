@@ -1,0 +1,12 @@
+spring.application.name=food-delivery-backend
+spring.datasource.url=jdbc:postgresql://localhost:5432/food_delivery
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.open-in-view=false
+
+jwt.secret=your_32_byte_secret_key
+jwt.expiration=86400000
+
+spring.flyway.enabled=true
