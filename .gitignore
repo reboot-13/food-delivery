@@ -1,0 +1,18 @@
+# IntelliJ / Android Studio
+.idea/
+*.iml
+
+# Android
+**/build/
+**/.gradle/
+local.properties
+
+# Backend
+food-delivery-backend/application.properties
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
