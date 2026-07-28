@@ -1,6 +1,7 @@
 package com.example.romanermilov.food_delivery_backend.service
 
 import com.example.romanermilov.food_delivery_backend.dto.response.ProductResponse
+import com.example.romanermilov.food_delivery_backend.dto.response.ShortProductResponse
 import com.example.romanermilov.food_delivery_backend.exception.ProductNotFoundException
 import com.example.romanermilov.food_delivery_backend.mapper.ProductMapper
 import com.example.romanermilov.food_delivery_backend.repository.ProductRepository
@@ -12,14 +13,14 @@ class ProductService (
     private val productRepository: ProductRepository
 ){
     @Transactional
-    fun getAllProducts(): List<ProductResponse>{
+    fun getAllProducts(): List<ShortProductResponse>{
         return productRepository.findByAvailableTrue()
-            .map(ProductMapper::toResponse)
+            .map(ProductMapper::toShortResponse)
     }
     @Transactional
-    fun getAllProductsByCategoryId(categoryId: Long): List<ProductResponse>{
+    fun getAllProductsByCategoryId(categoryId: Long): List<ShortProductResponse>{
         return productRepository.findByCategoryIdAndAvailableTrue(categoryId)
-            .map(ProductMapper::toResponse)
+            .map(ProductMapper::toShortResponse)
     }
 
     @Transactional

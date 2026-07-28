@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.android)
-
 }
 
 android {
@@ -74,6 +73,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlin.serialization)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.retrofit.gson.converter)
 // OkHttp
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)

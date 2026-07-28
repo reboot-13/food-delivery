@@ -1,5 +1,6 @@
 package com.example.romanermilov.food_delivery_backend.mapper
 import com.example.romanermilov.food_delivery_backend.dto.response.ProductResponse
+import com.example.romanermilov.food_delivery_backend.dto.response.ShortProductResponse
 import com.example.romanermilov.food_delivery_backend.entity.ProductEntity
 
 object ProductMapper {
@@ -14,5 +15,17 @@ object ProductMapper {
             calories = product.calories,
             available = product.available,
             category = CategoryMapper.toShortResponse(product.category))
+    }
+
+    fun toShortResponse(product: ProductEntity): ShortProductResponse{
+        return ShortProductResponse(
+            id = product.id!!,
+            name = product.name,
+            price = product.price,
+            weight = product.weight,
+            available = product.available,
+            imageUrl = product.imageUrl,
+            category = CategoryMapper.toShortResponse(product.category)
+        )
     }
 }

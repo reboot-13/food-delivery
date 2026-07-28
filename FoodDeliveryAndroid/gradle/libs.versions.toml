@@ -9,15 +9,16 @@ lifecycle = "2.9.1"
 activityCompose = "1.10.1"
 kotlin = "2.1.21"
 composeBom = "2025.05.00"
-ksp = "2.1.21-2.0.1"
-hilt = "2.56.2"
+ksp = "2.1.21-2.0.2"
+hilt = "2.57.1"
 navigationCompose = "2.9.8"
 coroutines = "1.10.2"
 retrofit = "3.0.0"
+gsonConverter = "2.11.0"
 kotlinSerialization = "1.9.0"
-serializationPlugin = "2.2.10"
+serializationPlugin = "2.1.21"
 okhttp = "4.12.0"
-room = "2.8.0"
+room = "2.7.2"
 datastore = "1.2.0"
 coil = "3.3.0"
 
@@ -54,6 +55,7 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+retrofit-gson-converter = {module = "com.squareup.retrofit2:converter-gson", version.ref = "gsonConverter"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
