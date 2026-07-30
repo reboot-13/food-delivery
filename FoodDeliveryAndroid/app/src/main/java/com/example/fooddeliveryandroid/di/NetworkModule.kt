@@ -1,6 +1,9 @@
 package com.example.fooddeliveryandroid.di
 
-import com.example.fooddeliveryandroid.data.remote.network.ProductApi
+import com.example.fooddeliveryandroid.data.remote.network.AuthInterceptor
+import com.example.fooddeliveryandroid.data.remote.network.api.CategoryApi
+import com.example.fooddeliveryandroid.data.remote.network.api.ProductApi
+import com.example.fooddeliveryandroid.data.remote.network.api.UserApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -9,6 +12,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import javax.inject.Singleton
 
 @Module
@@ -27,9 +31,11 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(
-        httpLoggingInterceptor: HttpLoggingInterceptor
+        httpLoggingInterceptor: HttpLoggingInterceptor,
+        authInterceptor: AuthInterceptor
     ) : OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
             .addInterceptor(httpLoggingInterceptor)
             .build()
     }
@@ -53,4 +59,20 @@ object NetworkModule {
     ) : ProductApi {
         return retrofit.create(ProductApi::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideCategoryApi(
+        retrofit: Retrofit
+    ): CategoryApi {
+        return retrofit.create(CategoryApi::class.java)
+    }
+    @Provides
+    @Singleton
+    fun provideUserApi(
+        retrofit: Retrofit
+    ): UserApi {
+        return retrofit.create(UserApi::class.java)
+    }
+
 }

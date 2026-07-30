@@ -1,7 +1,7 @@
 package com.example.fooddeliveryandroid.data.repository
 
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
-import com.example.fooddeliveryandroid.data.remote.network.ProductApi
+import com.example.fooddeliveryandroid.data.remote.network.api.ProductApi
 import com.example.fooddeliveryandroid.data.remote.network.safeApiCall
 import com.example.fooddeliveryandroid.domain.mapper.ProductMapper
 import com.example.fooddeliveryandroid.domain.model.Product

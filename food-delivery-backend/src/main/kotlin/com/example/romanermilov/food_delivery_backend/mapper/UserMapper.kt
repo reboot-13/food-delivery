@@ -5,6 +5,6 @@ import com.example.romanermilov.food_delivery_backend.entity.UserEntity
 
 object UserMapper {
     fun toResponse(user: UserEntity): UserResponse {
-        return UserResponse(user.id!!, user.phoneNumber, user.role)
+        return UserResponse(user.id!!, user.name, user.phoneNumber, user.role, user.createdAt)
     }
 }

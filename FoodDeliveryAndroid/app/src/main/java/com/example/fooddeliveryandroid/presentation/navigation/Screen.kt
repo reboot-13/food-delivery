@@ -11,4 +11,6 @@ sealed class Screen (route: String){
     object Product : Screen("product/{productId}")
 
     object Order : Screen("order/{orderId}")
+
+    object Orders : Screen("orders")
 }

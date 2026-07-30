@@ -3,11 +3,14 @@ package com.example.romanermilov.food_delivery_backend.service
 import com.example.romanermilov.food_delivery_backend.dto.request.AuthRequest
 import com.example.romanermilov.food_delivery_backend.dto.request.RegisterRequest
 import com.example.romanermilov.food_delivery_backend.dto.response.AuthResponse
+import com.example.romanermilov.food_delivery_backend.dto.response.UserResponse
 import com.example.romanermilov.food_delivery_backend.entity.UserEntity
 import com.example.romanermilov.food_delivery_backend.exception.IncorrectAuthData
 import com.example.romanermilov.food_delivery_backend.exception.UserAlreadyExistsException
+import com.example.romanermilov.food_delivery_backend.exception.UserNotFoundException
 import com.example.romanermilov.food_delivery_backend.mapper.UserMapper
 import com.example.romanermilov.food_delivery_backend.repository.UserRepository
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -29,8 +32,20 @@ class UserService(
         return passwordEncoder.matches(password, user.password)
     }
 
-    fun findByPhoneNumber(phoneNumber: String): UserEntity? = userRepository.findByPhoneNumber(phoneNumber)
+    fun findByPhoneNumber(phoneNumber: String): UserEntity {
+        return userRepository
+            .findByPhoneNumber(phoneNumber)
+            .orElseThrow{UserNotFoundException(phoneNumber)}
+    }
 
+    fun getCurrentUser(): UserResponse {
+        val authentication = SecurityContextHolder
+            .getContext()
+            .authentication ?: throw IncorrectAuthData()
+        val user = authentication.principal as UserEntity
+        return UserMapper
+            .toResponse(user)
+    }
 
     private fun createAuthResponse(user: UserEntity, token: String): AuthResponse {
         val userResponse = UserMapper.toResponse(user)
@@ -56,7 +71,7 @@ class UserService(
     }
 
     fun authUser(authRequest: AuthRequest) : AuthResponse {
-            val user = userRepository.findByPhoneNumber(authRequest.phoneNumber) ?: throw IncorrectAuthData()
+            val user = findByPhoneNumber(authRequest.phoneNumber)
 
             if(!passwordMatches(authRequest.password, user)){
                 throw IncorrectAuthData()

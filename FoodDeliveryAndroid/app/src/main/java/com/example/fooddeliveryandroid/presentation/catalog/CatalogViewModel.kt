@@ -3,9 +3,9 @@ package com.example.fooddeliveryandroid.presentation.catalog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
-import com.example.fooddeliveryandroid.data.repository.ProductRepository
-import com.example.fooddeliveryandroid.domain.model.Product
+import com.example.fooddeliveryandroid.data.repository.CatalogRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CatalogViewModel @Inject constructor(
-    private val productRepository: ProductRepository
+    private val catalogRepository: CatalogRepository
 ) : ViewModel(){
     private val _uiState = MutableStateFlow<CatalogUIState>(CatalogUIState.Loading)
     val uiState: StateFlow<CatalogUIState> = _uiState.asStateFlow()
@@ -25,13 +25,11 @@ class CatalogViewModel @Inject constructor(
 
     private fun loadProducts() {
         viewModelScope.launch {
-            when(
-                val result: NetworkResult<List<Product>> = productRepository.getAllProducts()
-            ) {
-                is NetworkResult.Success ->
-                    _uiState.value = CatalogUIState.Success(products = result.data)
+            when(val catalogData = catalogRepository.getCatalogData()) {
                 is NetworkResult.Error ->
-                    _uiState.value = CatalogUIState.Error(message = result.exception.message ?: "Неизвестная ошибка")
+                    _uiState.value = CatalogUIState.Error(catalogData.exception.message ?: "Неизвестная ошибка")
+                is NetworkResult.Success ->
+                    _uiState.value = CatalogUIState.Success(catalogData.data)
             }
         }
     }

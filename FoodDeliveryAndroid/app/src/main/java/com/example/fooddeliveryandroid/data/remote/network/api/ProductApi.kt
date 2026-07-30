@@ -1,4 +1,4 @@
-package com.example.fooddeliveryandroid.data.remote.network
+package com.example.fooddeliveryandroid.data.remote.network.api
 
 import com.example.fooddeliveryandroid.data.remote.dto.ProductResponse
 import com.example.fooddeliveryandroid.data.remote.dto.ShortProductResponse
