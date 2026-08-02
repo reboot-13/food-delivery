@@ -1,6 +1,8 @@
 package com.example.fooddeliveryandroid.presentation.profile
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
@@ -10,11 +12,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fooddeliveryandroid.data.remote.dto.request.AuthRequest
 import com.example.fooddeliveryandroid.data.remote.dto.request.RegisterRequest
 import com.example.fooddeliveryandroid.domain.model.User
+import com.example.fooddeliveryandroid.presentation.profile.formState.RegisterFormState
 
 @Composable
 fun ProfileScreen (
@@ -23,35 +29,31 @@ fun ProfileScreen (
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val validationState = viewModel.validationState.collectAsStateWithLifecycle()
-
     when (val state = uiState.value) {
         is ProfileUIState.Loading ->
             CircularProgressIndicator()
 
         is ProfileUIState.UnauthorizedRegister ->
             RegisterForm(
+                viewModel,
                 validationState.value,
-                onClickRegisterButton = { request ->
-                    viewModel.register(request)
-                },
                 onClickNavigateButton = {
                     viewModel.showAuthForm()
                 }
             )
 
-        is ProfileUIState.UnauthorizedAuth ->
+        is ProfileUIState.UnauthorizedAuth -> {
             AuthForm(
+                viewModel,
                 validationState.value,
-                onClickAuthButton = {request ->
-                    viewModel.auth(request)
-                },
                 onClickNavigateButton = {
                     viewModel.showRegisterForm()
                 }
             )
+        }
 
         is ProfileUIState.Authorized ->
-            Profile(
+            UserProfile(
                 state.user,
                 onShowOrders = onShowOrders,
                 onLogout = {
@@ -63,21 +65,22 @@ fun ProfileScreen (
             Text(state.message)
     }
 }
+
 @Composable
 fun RegisterForm(
+    viewModel: ProfileViewModel,
     validationState: ProfileValidationState,
-    onClickRegisterButton: (RegisterRequest) -> Unit,
-    onClickNavigateButton: () -> Unit
+    onClickNavigateButton: () -> Unit,
 ) {
-    var name by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val registerForm by viewModel.registerFormState.collectAsStateWithLifecycle()
+
     Column() {
         OutlinedTextField(
-            value = name,
-            onValueChange = {
-                name = it
+            value = registerForm.name,
+            label = {
+                Text("Имя")
             },
+            onValueChange = viewModel::onRegisterNameChanged,
             isError = validationState.name != null,
             supportingText = {
                 validationState.name?.let { errorMessage ->
@@ -86,10 +89,11 @@ fun RegisterForm(
             }
         )
         OutlinedTextField(
-            value = phoneNumber,
-            onValueChange = {
-                phoneNumber = it
-            },
+            value = registerForm.phoneNumber,
+            label = {
+                Text("Номер телефона")
+                    },
+            onValueChange = viewModel::onRegisterPhoneChanged,
             isError = validationState.phoneNumber != null,
             supportingText = {
                 validationState.phoneNumber?.let { errorMessage ->
@@ -99,10 +103,11 @@ fun RegisterForm(
 
         )
         OutlinedTextField(
-            value = password,
-            onValueChange = {
-                password = it
+            value = registerForm.password,
+            label = {
+                Text("Пароль")
             },
+            onValueChange = viewModel::onRegisterPasswordChanged,
             isError = validationState.password != null,
             supportingText = {
                 validationState.password?.let { errorMessage ->
@@ -112,13 +117,7 @@ fun RegisterForm(
         )
         Button(
             onClick = {
-                onClickRegisterButton(
-                    RegisterRequest(
-                        name = name,
-                        phoneNumber = phoneNumber,
-                        password = password
-                    )
-                )
+                viewModel.register()
             }
 
         ) {
@@ -135,18 +134,18 @@ fun RegisterForm(
 
 @Composable
 fun AuthForm(
+    viewModel: ProfileViewModel,
     validationState: ProfileValidationState,
-    onClickAuthButton: (AuthRequest) -> Unit,
     onClickNavigateButton: () -> Unit
 ) {
-    var phoneNumber by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val authForm by viewModel.authFormState.collectAsStateWithLifecycle()
     Column() {
         OutlinedTextField(
-            value = phoneNumber,
-            onValueChange = {
-                phoneNumber = it
+            value = authForm.phoneNumber,
+            label = {
+                Text("Номер телефона")
             },
+            onValueChange = viewModel::onAuthPhoneChanged,
             isError = validationState.phoneNumber != null,
             supportingText = {
                 validationState.phoneNumber?.let { errorMessage ->
@@ -155,10 +154,11 @@ fun AuthForm(
             }
         )
         OutlinedTextField(
-            value = password,
-            onValueChange = {
-                password = it
+            value = authForm.password,
+            label = {
+                Text("Пароль")
             },
+            onValueChange = viewModel::onAuthPasswordChanged,
             isError = validationState.password != null,
             supportingText = {
                 validationState.password?.let { errorMessage ->
@@ -166,14 +166,15 @@ fun AuthForm(
                 }
             }
         )
+        if (!validationState.authError.isNullOrBlank())
+            Text(
+                color = Color.Red,
+                text = validationState.authError
+            )
+
         Button(
             onClick = {
-                onClickAuthButton(
-                    AuthRequest(
-                        phoneNumber = phoneNumber,
-                        password = password
-                    )
-                )
+                viewModel.auth()
             }
 
         ) {
@@ -184,12 +185,11 @@ fun AuthForm(
         ) {
             Text("Нет аккаунта, зарегистрироваться")
         }
-
     }
 }
 
 @Composable
-fun Profile(
+fun UserProfile(
     user: User,
     onShowOrders: () -> Unit,
     onLogout: () -> Unit

@@ -10,10 +10,15 @@ import com.example.fooddeliveryandroid.data.repository.ProfileRepository
 import com.example.fooddeliveryandroid.datastore.SessionManager
 import com.example.fooddeliveryandroid.domain.validation.AuthValidator
 import com.example.fooddeliveryandroid.domain.validation.ValidationResult
+import com.example.fooddeliveryandroid.presentation.profile.formState.AuthFormState
+import com.example.fooddeliveryandroid.presentation.profile.formState.RegisterFormState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,6 +32,12 @@ class ProfileViewModel @Inject constructor (
     private val _validationState =
         MutableStateFlow(ProfileValidationState())
     val validationState = _validationState.asStateFlow()
+
+    private val _authFormState = MutableStateFlow(AuthFormState())
+    val authFormState: StateFlow<AuthFormState> = _authFormState
+
+    private val _registerFormState = MutableStateFlow(RegisterFormState())
+    val registerFormState: StateFlow<RegisterFormState> = _registerFormState
 
     private val validator = AuthValidator()
 
@@ -42,14 +53,28 @@ class ProfileViewModel @Inject constructor (
         }
     }
 
+    private fun clearAuthError(){
+        _validationState.value = _validationState.value.copy(
+            authError = null
+        )
+    }
+
+    private fun clearErrorFields() {
+        _validationState.value = _validationState.value.copy(
+            phoneNumber = null,
+            name = null,
+            password = null
+        )
+    }
+
     fun showAuthForm() {
         _uiState.value = ProfileUIState.UnauthorizedAuth
-        _validationState.value = ProfileValidationState()
+        clearErrorFields()
     }
 
     fun showRegisterForm() {
         _uiState.value = ProfileUIState.UnauthorizedRegister
-        _validationState.value = ProfileValidationState()
+        clearErrorFields()
 
     }
 
@@ -57,35 +82,61 @@ class ProfileViewModel @Inject constructor (
         viewModelScope.launch {
             sessionManager.clearToken()
             _uiState.value = ProfileUIState.UnauthorizedAuth
+            clearErrorFields()
         }
     }
 
-    fun auth(authRequest: AuthRequest) {
+    fun auth() {
+        val authRequest = AuthRequest(
+            phoneNumber = _authFormState.value.phoneNumber,
+            password = _authFormState.value.password,
+            )
         val validation = validateAuth(authRequest)
         _validationState.value = validation
-        Log.d("Auth request", "ads")
+
         if (!validation.isValid) return
         viewModelScope.launch {
-            Log.d("Auth request", "ads")
             when (val authResult = profileRepository.auth(authRequest)) {
-                is NetworkResult.Error ->
-                    _uiState.value = ProfileUIState.Error(authResult.exception.message ?: "Неизвестная ошибка")
-                is NetworkResult.Success ->
+                is NetworkResult.Error -> {
+                    when (authResult.code) {
+                        401 -> {
+                            _validationState.value =
+                                _validationState.value.copy(
+                                    authError = "Неверный номер телефона или пароль"
+                                )
+                        }
+
+                        else -> _uiState.value = ProfileUIState.Error(
+                            authResult.exception.message ?: "Неизвестная ошибка"
+                        )
+                    }
+                }
+
+                is NetworkResult.Success -> {
                     loadUserData()
+                    cleanAuthForm()
+                }
             }
         }
     }
 
     private fun validateAuth(authRequest: AuthRequest): ProfileValidationState {
         with(authRequest) {
-            return ProfileValidationState(
+            val profileValidationState =  ProfileValidationState(
                 phoneNumber = (validator.validatePhone(phoneNumber) as? ValidationResult.Error)?.message,
                 password = (validator.validatePassword(password) as? ValidationResult.Error)?.message
             )
+            return profileValidationState
         }
     }
 
-    fun register(registerRequest: RegisterRequest){
+    fun register(){
+        val registerRequest = RegisterRequest(
+            name = _registerFormState.value.name,
+            phoneNumber = _registerFormState.value.phoneNumber,
+            password = _registerFormState.value.password,
+
+        )
         val validation = validateRegister(registerRequest)
         _validationState.value = validation
         if (!validation.isValid) return
@@ -96,11 +147,21 @@ class ProfileViewModel @Inject constructor (
             ) {
                 is NetworkResult.Error ->
                     _uiState.value = ProfileUIState.Error(registerResult.exception.message ?: "Неизвестная ошибка")
-                is NetworkResult.Success ->
+                is NetworkResult.Success -> {
                     loadUserData()
-
+                    cleanRegisterForm()
+                }
             }
+            clearErrorFields()
         }
+    }
+
+    private fun cleanRegisterForm() {
+        _registerFormState.value = RegisterFormState()
+    }
+
+    private fun cleanAuthForm() {
+        _authFormState.value = AuthFormState()
     }
     private fun validateRegister(registerRequest: RegisterRequest): ProfileValidationState {
         with(registerRequest) {
@@ -112,14 +173,42 @@ class ProfileViewModel @Inject constructor (
         }
     }
 
-    private fun loadUserData() {
-        viewModelScope.launch {
-            when (val userResult = profileRepository.getCurrentUser()) {
-                is NetworkResult.Error ->
-                    _uiState.value = ProfileUIState.Error(userResult.exception.message ?: "Неизвестная ошибка")
-                is NetworkResult.Success ->
-                    _uiState.value = ProfileUIState.Authorized(userResult.data)
-            }
+    private suspend fun loadUserData() {
+        when (val userResult = profileRepository.getCurrentUser()) {
+            is NetworkResult.Error ->
+                _uiState.value = ProfileUIState.Error(userResult.exception.message ?: "Неизвестная ошибка")
+            is NetworkResult.Success ->
+                _uiState.value = ProfileUIState.Authorized(userResult.data)
+        }
+    }
+
+    fun onRegisterPhoneChanged(phone: String) {
+        _registerFormState.update { formState ->
+            formState.copy(phoneNumber = phone)
+        }
+    }
+
+    fun onRegisterPasswordChanged(password: String){
+        _registerFormState.update { formState ->
+            formState.copy(password = password)
+        }
+    }
+
+    fun onRegisterNameChanged(name: String){
+        _registerFormState.update { formState ->
+            formState.copy(name = name)
+        }
+    }
+
+    fun onAuthPhoneChanged(phone: String){
+        _authFormState.update { formState ->
+            formState.copy(phoneNumber = phone)
+        }
+    }
+
+    fun onAuthPasswordChanged(password: String) {
+        _authFormState.update { formState ->
+            formState.copy(password = password)
         }
     }
 }

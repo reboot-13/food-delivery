@@ -7,6 +7,7 @@ sealed class NetworkResult<out T> {
     ) : NetworkResult<T>()
 
     data class Error(
-        val exception: Throwable
+        val exception: Throwable,
+        val code: Int? = null
     ) : NetworkResult<Nothing>()
 }
