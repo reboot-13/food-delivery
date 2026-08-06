@@ -1,6 +1,5 @@
 package com.example.fooddeliveryandroid.presentation.profile
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fooddeliveryandroid.data.remote.dto.request.AuthRequest
