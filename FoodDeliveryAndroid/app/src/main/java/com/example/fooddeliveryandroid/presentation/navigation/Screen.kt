@@ -13,4 +13,6 @@ sealed class Screen (route: String){
     object Order : Screen("order/{orderId}")
 
     object Orders : Screen("orders")
+
+    object Splash : Screen("splash")
 }

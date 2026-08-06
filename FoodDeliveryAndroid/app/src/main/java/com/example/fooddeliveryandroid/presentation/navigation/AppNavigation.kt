@@ -7,13 +7,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.fooddeliveryandroid.presentation.catalog.CatalogScreen
 import com.example.fooddeliveryandroid.presentation.profile.ProfileScreen
+import com.example.fooddeliveryandroid.presentation.splash.SplashScreen
 
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "profile",
+        startDestination = "splash",
         modifier = modifier
     ) {
         composable("catalog") {
@@ -23,6 +24,17 @@ fun AppNavigation(modifier: Modifier = Modifier) {
             ProfileScreen(
                 onShowOrders = {
                     navController.navigate("orders")
+                }
+            )
+        }
+        composable ( "splash" ) {
+            SplashScreen(
+                onGoToCatalog = {
+                    navController.navigate("profile") {
+                        popUpTo("splash") {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }

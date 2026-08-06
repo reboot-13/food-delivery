@@ -115,6 +115,13 @@ fun RegisterForm(
                 }
             }
         )
+
+        if (!validationState.registerError.isNullOrBlank())
+            Text(
+                color = Color.Red,
+                text = validationState.registerError
+            )
+
         Button(
             onClick = {
                 viewModel.register()
@@ -126,7 +133,7 @@ fun RegisterForm(
         Button(
             onClick = onClickNavigateButton
         ) {
-            Text("Уже есть аккаунт, авторизоваться")
+            Text("Уже есть аккаунт, войти")
         }
 
     }

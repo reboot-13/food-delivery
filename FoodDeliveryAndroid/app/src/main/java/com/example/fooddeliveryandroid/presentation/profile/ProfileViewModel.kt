@@ -8,6 +8,7 @@ import com.example.fooddeliveryandroid.data.remote.dto.request.RegisterRequest
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.repository.ProfileRepository
 import com.example.fooddeliveryandroid.datastore.SessionManager
+import com.example.fooddeliveryandroid.datastore.UserSession
 import com.example.fooddeliveryandroid.domain.validation.AuthValidator
 import com.example.fooddeliveryandroid.domain.validation.ValidationResult
 import com.example.fooddeliveryandroid.presentation.profile.formState.AuthFormState
@@ -18,13 +19,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor (
     private val profileRepository: ProfileRepository,
     private val sessionManager: SessionManager,
+    private val userSession: UserSession
 ): ViewModel(){
     private val _uiState = MutableStateFlow<ProfileUIState>(ProfileUIState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -42,14 +43,15 @@ class ProfileViewModel @Inject constructor (
     private val validator = AuthValidator()
 
     init {
-            viewModelScope.launch {
-            if (!sessionManager.hasToken()) {
-                _uiState.value = ProfileUIState.UnauthorizedRegister
+        viewModelScope.launch {
+            userSession.currentUser.collect { user ->
+                if (user == null) {
+                    _uiState.value = ProfileUIState.UnauthorizedRegister
+                } else {
+                    _uiState.value = ProfileUIState.Authorized(user)
+                }
             }
 
-            else {
-                loadUserData()
-            }
         }
     }
 
@@ -81,7 +83,7 @@ class ProfileViewModel @Inject constructor (
     fun logout() {
         viewModelScope.launch {
             sessionManager.clearToken()
-            _uiState.value = ProfileUIState.UnauthorizedAuth
+            userSession.clear()
             clearErrorFields()
         }
     }
@@ -95,6 +97,8 @@ class ProfileViewModel @Inject constructor (
         _validationState.value = validation
 
         if (!validation.isValid) return
+
+
         viewModelScope.launch {
             when (val authResult = profileRepository.auth(authRequest)) {
                 is NetworkResult.Error -> {
@@ -145,8 +149,19 @@ class ProfileViewModel @Inject constructor (
             when (
                 val registerResult = profileRepository.register(registerRequest)
             ) {
-                is NetworkResult.Error ->
-                    _uiState.value = ProfileUIState.Error(registerResult.exception.message ?: "Неизвестная ошибка")
+                is NetworkResult.Error -> {
+                    when(registerResult.code) {
+                        401 -> {
+                            _validationState.value =
+                                _validationState.value.copy(registerError = "Неправильные номер телефона или пароль")
+                        }
+                        409 -> {
+                            _validationState.value =
+                                _validationState.value.copy(registerError = "Пользователь с таким номером телефона уже существует")
+                        }
+                        else -> _uiState.value = ProfileUIState.Error(registerResult.exception.message ?: "Неизвестная ошибка")
+                    }
+                }
                 is NetworkResult.Success -> {
                     loadUserData()
                     cleanRegisterForm()
@@ -178,7 +193,7 @@ class ProfileViewModel @Inject constructor (
             is NetworkResult.Error ->
                 _uiState.value = ProfileUIState.Error(userResult.exception.message ?: "Неизвестная ошибка")
             is NetworkResult.Success ->
-                _uiState.value = ProfileUIState.Authorized(userResult.data)
+                userSession.setUser(userResult.data)
         }
     }
 
@@ -204,11 +219,13 @@ class ProfileViewModel @Inject constructor (
         _authFormState.update { formState ->
             formState.copy(phoneNumber = phone)
         }
+        clearAuthError()
     }
 
     fun onAuthPasswordChanged(password: String) {
         _authFormState.update { formState ->
             formState.copy(password = password)
         }
+        clearAuthError()
     }
 }

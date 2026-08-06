@@ -57,4 +57,18 @@ class GlobalExceptionHandler {
             .status(status)
             .body(response)
     }
+
+    @ExceptionHandler(UserAlreadyExistsException::class)
+    fun handleUserAlreadyExists(exception: UserAlreadyExistsException) : ResponseEntity<ErrorResponse> {
+        val status = HttpStatus.CONFLICT
+        val response = ErrorResponse(
+            status = status.value(),
+            error = "User already exists",
+            message = exception.message!!,
+            timestamp = LocalDateTime.now().toString()
+        )
+        return ResponseEntity
+            .status(status)
+            .body(response)
+    }
 }
