@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.repository.ProfileRepository
-import com.example.fooddeliveryandroid.datastore.SessionManager
-import com.example.fooddeliveryandroid.datastore.UserSession
+import com.example.fooddeliveryandroid.data.local.datastore.SessionManager
+import com.example.fooddeliveryandroid.data.local.datastore.UserSession
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

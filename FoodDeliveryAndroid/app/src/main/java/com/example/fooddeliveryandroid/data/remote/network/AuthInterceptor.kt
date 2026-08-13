@@ -1,6 +1,6 @@
 package com.example.fooddeliveryandroid.data.remote.network
 
-import com.example.fooddeliveryandroid.datastore.SessionManager
+import com.example.fooddeliveryandroid.data.local.datastore.SessionManager
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response

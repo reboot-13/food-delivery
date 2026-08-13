@@ -1,4 +1,4 @@
-package com.example.fooddeliveryandroid.datastore
+package com.example.fooddeliveryandroid.data.local.datastore
 
 import com.example.fooddeliveryandroid.domain.model.User
 import kotlinx.coroutines.flow.MutableStateFlow

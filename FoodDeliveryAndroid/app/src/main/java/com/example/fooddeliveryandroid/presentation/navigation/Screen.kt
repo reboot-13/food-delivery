@@ -1,18 +1,20 @@
 package com.example.fooddeliveryandroid.presentation.navigation
 
-sealed class Screen (route: String){
+sealed class Screen (val route: String){
 
-    object Catalog : Screen("catalog")
+    data object Catalog : Screen("catalog")
 
-    object Profile : Screen("profile")
+    data object Profile : Screen("profile")
 
-    object Cart : Screen("cart")
+    data object Cart : Screen("cart")
 
-    object Product : Screen("product/{productId}")
+    data object Product : Screen("product/{productId}")
 
-    object Order : Screen("order/{orderId}")
+    data object Order : Screen("order/{orderId}")
 
-    object Orders : Screen("orders")
+    data object Orders : Screen("orders")
 
-    object Splash : Screen("splash")
+    data object Splash : Screen("splash")
+
+    data object MainScreen: Screen(route = "mainScreen")
 }

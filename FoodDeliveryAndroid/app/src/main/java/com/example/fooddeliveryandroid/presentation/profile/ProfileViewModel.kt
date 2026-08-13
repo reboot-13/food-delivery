@@ -6,8 +6,8 @@ import com.example.fooddeliveryandroid.data.remote.dto.request.AuthRequest
 import com.example.fooddeliveryandroid.data.remote.dto.request.RegisterRequest
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.repository.ProfileRepository
-import com.example.fooddeliveryandroid.datastore.SessionManager
-import com.example.fooddeliveryandroid.datastore.UserSession
+import com.example.fooddeliveryandroid.data.local.datastore.SessionManager
+import com.example.fooddeliveryandroid.data.local.datastore.UserSession
 import com.example.fooddeliveryandroid.domain.validation.AuthValidator
 import com.example.fooddeliveryandroid.domain.validation.ValidationResult
 import com.example.fooddeliveryandroid.presentation.profile.formState.AuthFormState

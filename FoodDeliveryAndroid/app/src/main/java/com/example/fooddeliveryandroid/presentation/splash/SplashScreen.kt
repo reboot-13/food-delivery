@@ -13,7 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun SplashScreen(
     viewModel: SplashViewModel = hiltViewModel(),
-    onGoToCatalog: () -> Unit
+    onGoToMainScaffold: () -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -25,7 +25,7 @@ fun SplashScreen(
 
     LaunchedEffect(uiState.value) {
         if (uiState.value is SplashUIState.GoToCatalog) {
-            onGoToCatalog()
+            onGoToMainScaffold()
         }
     }
 

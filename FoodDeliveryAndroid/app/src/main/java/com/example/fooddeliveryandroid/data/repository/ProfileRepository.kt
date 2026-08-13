@@ -6,7 +6,7 @@ import com.example.fooddeliveryandroid.data.remote.dto.request.RegisterRequest
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.remote.network.api.UserApi
 import com.example.fooddeliveryandroid.data.remote.network.safeApiCall
-import com.example.fooddeliveryandroid.datastore.SessionManager
+import com.example.fooddeliveryandroid.data.local.datastore.SessionManager
 import com.example.fooddeliveryandroid.domain.mapper.UserMapper
 import com.example.fooddeliveryandroid.domain.model.User
 import javax.inject.Inject

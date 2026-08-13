@@ -1,4 +1,4 @@
-package com.example.fooddeliveryandroid.datastore
+package com.example.fooddeliveryandroid.data.local.datastore
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
@@ -49,6 +49,5 @@ class SessionManager @Inject constructor(
         )
 
         val TOKEN_KEY = stringPreferencesKey(name = "jwt_token")
-
     }
 }

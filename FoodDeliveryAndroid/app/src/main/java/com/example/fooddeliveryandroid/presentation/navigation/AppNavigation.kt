@@ -5,33 +5,26 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.fooddeliveryandroid.presentation.catalog.CatalogScreen
-import com.example.fooddeliveryandroid.presentation.profile.ProfileScreen
 import com.example.fooddeliveryandroid.presentation.splash.SplashScreen
 
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
-    val navController = rememberNavController()
+
+    val rootNavController = rememberNavController()
+
     NavHost(
-        navController = navController,
-        startDestination = "splash",
+        navController = rootNavController,
+        startDestination = Screen.Splash.route,
         modifier = modifier
     ) {
-        composable("catalog") {
-            CatalogScreen()
+        composable (route = Screen.MainScreen.route){
+            MainScaffold(modifier)
         }
-        composable ("profile") {
-            ProfileScreen(
-                onShowOrders = {
-                    navController.navigate("orders")
-                }
-            )
-        }
-        composable ( "splash" ) {
+        composable(route = Screen.Splash.route) {
             SplashScreen(
-                onGoToCatalog = {
-                    navController.navigate("profile") {
-                        popUpTo("splash") {
+                onGoToMainScaffold = {
+                    rootNavController.navigate(Screen.MainScreen.route) {
+                        popUpTo(route = Screen.Splash.route) {
                             inclusive = true
                         }
                     }
