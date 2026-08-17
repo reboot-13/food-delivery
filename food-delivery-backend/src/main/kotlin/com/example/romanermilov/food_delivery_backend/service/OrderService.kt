@@ -109,8 +109,8 @@ class OrderService (
         order: OrderEntity,
         user: UserEntity
     ) {
-        val isOwner = user.id != order.user.id
-        val isAdmin = user.role != UserRole.ADMIN
+        val isOwner = user.id == order.user.id
+        val isAdmin = user.role == UserRole.ADMIN
         if (!isOwner && !isAdmin) throw NotEnoughAccessRights()
     }
 

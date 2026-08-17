@@ -73,5 +73,4 @@ object NetworkModule {
     ): UserApi {
         return retrofit.create(UserApi::class.java)
     }
-
 }

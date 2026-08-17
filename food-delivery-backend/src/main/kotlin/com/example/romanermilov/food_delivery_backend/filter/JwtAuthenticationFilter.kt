@@ -26,19 +26,18 @@ class JwtAuthenticationFilter(
             val authHeader = request.getHeader("Authorization")
             if (authHeader != null && authHeader.startsWith("Bearer ")){
                 val receivedToken = authHeader.substring(7)
+
                 val phoneNumber = jwtService.extractPhoneNumber(receivedToken)
                 val user = userService.findByPhoneNumber(phoneNumber)
-                if (user != null) {
-                    val authentication = UsernamePasswordAuthenticationToken(
-                        user,
-                        null,
-                        emptyList()
-                    )
-                    SecurityContextHolder
-                        .getContext()
-                        .authentication = authentication
-                }
 
+                val authentication = UsernamePasswordAuthenticationToken(
+                    user,
+                    null,
+                    emptyList()
+                )
+                SecurityContextHolder
+                    .getContext()
+                    .authentication = authentication
             }
         }
         filterChain.doFilter(request, response)

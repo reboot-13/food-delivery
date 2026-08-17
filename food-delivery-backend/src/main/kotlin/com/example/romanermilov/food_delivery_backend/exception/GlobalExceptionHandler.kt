@@ -71,4 +71,60 @@ class GlobalExceptionHandler {
             .status(status)
             .body(response)
     }
+
+    @ExceptionHandler(NotEnoughAccessRights::class)
+    fun handleNotEnoughAccessRights(exception: NotEnoughAccessRights): ResponseEntity<ErrorResponse> {
+        val status = HttpStatus.FORBIDDEN
+        val exceptionResponse = ErrorResponse(
+            status = status.value(),
+            error = "Not enough access rights",
+            message = exception.message!!,
+            timestamp = LocalDateTime.now().toString()
+        )
+        return ResponseEntity
+            .status(status)
+            .body(exceptionResponse)
+    }
+
+    @ExceptionHandler(UserNotFoundException::class)
+    fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse> {
+        val status = HttpStatus.NOT_FOUND
+        val exceptionResponse = ErrorResponse(
+            status = status.value(),
+            error = "User not found",
+            message = exception.message!!,
+            timestamp = LocalDateTime.now().toString()
+        )
+        return ResponseEntity
+            .status(status)
+            .body(exceptionResponse)
+    }
+
+    @ExceptionHandler(OrderNotFoundException::class)
+    fun handleOrderNotFoundException(exception: OrderNotFoundException): ResponseEntity<ErrorResponse> {
+        val status = HttpStatus.NOT_FOUND
+        val exceptionResponse = ErrorResponse(
+            status = status.value(),
+            error = "Order not found",
+            message = exception.message!!,
+            timestamp = LocalDateTime.now().toString()
+        )
+        return ResponseEntity
+            .status(status)
+            .body(exceptionResponse)
+    }
+
+    @ExceptionHandler (CartItemAlreadyExistsException::class)
+    fun handleCartItemAlreadyExistsException(exception: CartItemAlreadyExistsException): ResponseEntity<ErrorResponse> {
+        val status = HttpStatus.CONFLICT
+        val exceptionResponse = ErrorResponse(
+            status = status.value(),
+            error = "CartItem already exists",
+            message = exception.message!!,
+            timestamp = LocalDateTime.now().toString()
+        )
+        return ResponseEntity
+            .status(status)
+            .body(exceptionResponse)
+    }
 }

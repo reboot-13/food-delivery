@@ -6,6 +6,7 @@ import com.example.romanermilov.food_delivery_backend.dto.response.AuthResponse
 import com.example.romanermilov.food_delivery_backend.dto.response.UserResponse
 import com.example.romanermilov.food_delivery_backend.service.UserService
 import jakarta.validation.Valid
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -37,7 +38,10 @@ class UserController(
     }
 
     @GetMapping("/me")
-        fun getCurrentUser(): UserResponse {
+        fun getCurrentUser(authentication: Authentication): UserResponse {
+        println("CONTROLLER AUTH: $authentication")
+        println("CONTROLLER PRINCIPAL: ${authentication.principal}")
+        println("CONTROLLER IS AUTHENTICATED: ${authentication.isAuthenticated}")
             return userService.getCurrentUser()
     }
 }

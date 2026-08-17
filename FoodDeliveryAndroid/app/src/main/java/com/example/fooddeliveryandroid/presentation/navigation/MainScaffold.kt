@@ -1,10 +1,13 @@
 package com.example.fooddeliveryandroid.presentation.navigation
 
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -32,8 +35,11 @@ fun MainScaffold(
     ) { innerPadding ->
         NavHost(
             navController = mainNavController,
-            startDestination = Screen.Profile.route, //change to Catalog later
-            modifier = modifier.padding(innerPadding)
+            startDestination = Screen.Catalog.route,
+            modifier = modifier.padding(
+                start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
+                end = innerPadding.calculateEndPadding(LocalLayoutDirection.current)
+            )
         ) {
             composable(Screen.Catalog.route) {
                 CatalogScreen()
