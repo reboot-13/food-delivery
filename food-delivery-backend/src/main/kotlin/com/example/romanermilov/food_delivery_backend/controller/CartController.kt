@@ -29,11 +29,11 @@ class CartController (
     }
 
     @PatchMapping("/items/{id}")
-    fun updateQuantityItem(
+    fun updateQuantity(
         @PathVariable("productId") productId : Long,
         @RequestBody quantityRequest: UpdateCartItemQuantityRequest
-        ) {
-        cartItemService.updateQuantity(productId, quantityRequest.quantity)
+        ): CartItemResponse {
+        return cartItemService.updateQuantity(productId, quantityRequest.quantity)
     }
 
     @DeleteMapping("/items/{id}")

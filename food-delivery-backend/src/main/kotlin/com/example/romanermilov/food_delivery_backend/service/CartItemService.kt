@@ -43,7 +43,7 @@ class CartItemService (
         return CartItemMapper.toResponse(savedCartItem)
     }
 
-    fun updateQuantity(productId: Long, quantity: Short) {
+    fun updateQuantity(productId: Long, quantity: Short): CartItemResponse {
         val user = getUser()
         val cartItem = cartItemRepository
             .findByProductIdAndUserId(productId, user.id!!)
@@ -52,7 +52,8 @@ class CartItemService (
             }
 
         cartItem.quantity = quantity
-        cartItemRepository.save(cartItem)
+        val savedCartItem = cartItemRepository.save(cartItem)
+        return CartItemMapper.toResponse(savedCartItem)
     }
 
     fun deleteItem(productId: Long) {

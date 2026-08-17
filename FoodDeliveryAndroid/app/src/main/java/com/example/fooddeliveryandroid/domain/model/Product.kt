@@ -1,6 +1,5 @@
 package com.example.fooddeliveryandroid.domain.model
 
-import com.example.fooddeliveryandroid.data.remote.dto.CategoryShortResponse
 import java.math.BigDecimal
 
 data class Product (
@@ -12,5 +11,5 @@ data class Product (
     val weight: Short? = null,
     val calories: Short? = null,
     val available: Boolean,
-    val category: Category
+    val category: Category? = null
 )

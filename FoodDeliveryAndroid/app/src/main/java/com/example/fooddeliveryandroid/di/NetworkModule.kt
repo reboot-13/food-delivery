@@ -1,6 +1,7 @@
 package com.example.fooddeliveryandroid.di
 
 import com.example.fooddeliveryandroid.data.remote.network.AuthInterceptor
+import com.example.fooddeliveryandroid.data.remote.network.api.CartApi
 import com.example.fooddeliveryandroid.data.remote.network.api.CategoryApi
 import com.example.fooddeliveryandroid.data.remote.network.api.ProductApi
 import com.example.fooddeliveryandroid.data.remote.network.api.UserApi
@@ -72,5 +73,13 @@ object NetworkModule {
         retrofit: Retrofit
     ): UserApi {
         return retrofit.create(UserApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCartApi(
+        retrofit: Retrofit
+    ) : CartApi {
+        return retrofit.create(CartApi::class.java)
     }
 }
