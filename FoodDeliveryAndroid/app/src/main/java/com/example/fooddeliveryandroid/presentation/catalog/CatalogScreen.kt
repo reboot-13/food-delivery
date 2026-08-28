@@ -1,39 +1,70 @@
 package com.example.fooddeliveryandroid.presentation.catalog
 
 
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.fooddeliveryandroid.domain.model.CatalogProduct
 import com.example.fooddeliveryandroid.domain.model.Category
 import com.example.fooddeliveryandroid.domain.model.Product
+import com.example.fooddeliveryandroid.presentation.cart.ProductImage
+import kotlinx.coroutines.launch
 
 @Composable
 fun CatalogScreen (
     catalogViewModel: CatalogViewModel = hiltViewModel()
 ){
     val uiState = catalogViewModel.uiState.collectAsStateWithLifecycle()
-    when(val state = uiState.value) {
-        is CatalogUIState.Success -> {
-            Column() {
-                Categories(state.catalogData.categories)
-                Products(state.catalogData.products)
-            }
 
+    when(val state = uiState.value) {
+        is CatalogUIState.Loading -> CircularProgressIndicator()
+        is CatalogUIState.Success -> {
+
+            CatalogSuccess(
+                categories = state.catalogData.categories,
+                products = state.catalogData.products,
+                onProductClick = { productId ->
+
+                },
+                onAddToCart = { productId ->
+
+                }
+            )
         }
         is CatalogUIState.Error -> Text(state.message)
         CatalogUIState.Loading -> CircularProgressIndicator()
@@ -41,30 +72,170 @@ fun CatalogScreen (
 }
 
 @Composable
-fun Categories(categories: List<Category>) {
-    LazyRow (horizontalArrangement = Arrangement.SpaceEvenly) {
-        items(categories) { category ->
-            Text(category.name)
+fun CatalogSuccess(
+    categories: List<Category>,
+    products: List<CatalogProduct>,
+    onProductClick: (Long) -> Unit,
+    onAddToCart: (Long) -> Unit
+) {
+    val listState = rememberLazyListState()
+    val productsByCategory = remember(products) {
+        products.groupBy { it.product.category?.id}
+    }
+    val coroutineScope = rememberCoroutineScope ()
 
+    val currentCategoryIndex by remember {
+        derivedStateOf {
+
+            listState.layoutInfo
+                .visibleItemsInfo
+                .firstOrNull {
+                    it.index > 0
+                }
+                ?.index
+                ?.minus(1)
+        }
+    }
+
+    LazyColumn(
+        state = listState,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        stickyHeader {
+            CategoryRow(
+                categories = categories,
+                currentCategoryIndex = currentCategoryIndex,
+                onCategoryClick = { categoryIndex ->
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(categoryIndex + 1, )
+                    }
+                }
+            )
+        }
+
+        itemsIndexed(
+            items = categories,
+            key = { _ , category ->
+                category.id
+            }
+        ) { _, category ->
+            CategorySection(
+                category = category,
+                products = productsByCategory[category.id].orEmpty(),
+                onProductClick = onProductClick,
+                onAddToCart = onAddToCart
+            )
         }
     }
 }
 
 @Composable
-fun Products(products: List<Product>) {
-    LazyColumn() {
-        items(products) { product ->
-            Column() {
-                Text(
-                    product.name,
-                    fontSize = 20.sp
-                    )
-                Text(
-                    text = product.price.toString(),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+fun CategoryRow(
+    categories: List<Category>,
+    currentCategoryIndex: Int?,
+    onCategoryClick: (Int) -> Unit) {
+    val categoryListState = rememberLazyListState()
+
+    LazyRow(
+        state = categoryListState,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        itemsIndexed(
+            items = categories,
+            key = {_, category ->
+                category.id
+            }
+        ) {index, category ->
+            CategoryChip(
+                category = category,
+                onCategoryClick = {
+                    onCategoryClick(index)
+                }
+            )
+        }
+    }
+    LaunchedEffect(currentCategoryIndex) {
+
+        if (currentCategoryIndex != null) {
+
+            categoryListState.animateScrollToItem(
+                currentCategoryIndex!!
+            )
+        }
+    }
+}
+@Composable
+fun CategorySection(
+    category: Category,
+    products: List<CatalogProduct>,
+    onProductClick: (Long) -> Unit,
+    onAddToCart: (Long) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = category.name,
+            modifier = Modifier.padding(16.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(
+                items = products,
+                key = {it.product.id}
+            ) {catalogProduct ->
+                ProductCard(
+                    product = catalogProduct.product,
+                    quantity = catalogProduct.quantity,
+                    onProductClick = onProductClick,
+                    onAddToCart = onAddToCart
                 )
             }
         }
+    }
+}
+
+@Composable
+fun ProductCard (
+    product: Product,
+    quantity: Int,
+    onProductClick: (Long) -> Unit,
+    onAddToCart: (Long) -> Unit){
+    Card(
+        onClick = { onProductClick(product.id) },
+        modifier = Modifier
+            .width(180.dp)
+            .height(150.dp),
+
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(product.name)
+            ProductImage(
+                imageUrl = product.imageUrl,
+                imageDescription = product.name
+            )
+            Button(
+                onClick = { onAddToCart(product.id) }
+            ) {
+                Text("В корзину")
+            }
+        }
+    }
+}
+
+@Composable
+fun CatalogQuantitySelector (quantity: Int){
+
+}
+
+@Composable
+fun CategoryChip(
+    category: Category,
+    onCategoryClick: () -> Unit
+) {
+    Button(onClick = onCategoryClick) {
+        Text(category.name)
     }
 }

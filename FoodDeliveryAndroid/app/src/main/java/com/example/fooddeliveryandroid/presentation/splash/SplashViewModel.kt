@@ -38,6 +38,7 @@ class SplashViewModel @Inject constructor(
                     when (result.code) {
                         401 -> {
                             sessionManager.clearToken()
+                            userSession.clear()
                             finishLoading()
                         }
                         else -> finishLoading()

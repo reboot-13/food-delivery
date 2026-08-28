@@ -14,6 +14,7 @@ import com.example.romanermilov.food_delivery_backend.repository.ProductReposito
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import com.example.romanermilov.food_delivery_backend.exception.NoItemInCartException
 
 @Service
 class CartItemService (
@@ -43,6 +44,7 @@ class CartItemService (
         return CartItemMapper.toResponse(savedCartItem)
     }
 
+    @Transactional
     fun updateQuantity(productId: Long, quantity: Short): CartItemResponse {
         val user = getUser()
         val cartItem = cartItemRepository
@@ -56,10 +58,17 @@ class CartItemService (
         return CartItemMapper.toResponse(savedCartItem)
     }
 
+    @Transactional
     fun deleteItem(productId: Long) {
         val user = getUser()
+        cartItemRepository
+            .findByProductIdAndUserId(productId, user.id!!)
+            .orElseThrow {
+                NoItemInCartException(productId)
+            }
         cartItemRepository.deleteByUserIdAndProductId(userId = user.id!!, productId = productId)
     }
+
     @Transactional(readOnly = true)
     fun getCartItems(): List<CartItemResponse> {
         val user = getUser()

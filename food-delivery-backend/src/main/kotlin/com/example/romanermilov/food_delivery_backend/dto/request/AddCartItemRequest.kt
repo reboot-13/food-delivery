@@ -5,6 +5,4 @@ data class AddCartItemRequest (
     @field:Positive
     val productId: Long,
 
-    @field:Positive
-    val quantity: Short
 )

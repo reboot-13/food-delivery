@@ -38,6 +38,7 @@ fun MainScaffold(
             navController = mainNavController,
             startDestination = Screen.Catalog.route,
             modifier = modifier.padding(
+                top = innerPadding.calculateTopPadding(),
                 start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
                 end = innerPadding.calculateEndPadding(LocalLayoutDirection.current)
             )
@@ -53,8 +54,13 @@ fun MainScaffold(
                 )
             }
             composable ( Screen.Cart.route ) {
-                CartScreen()
+                CartScreen(
+                    onGoToAuthScreen = {
+                        mainNavController.navigate(Screen.Profile.route)
+                    }
+                )
             }
         }
+
     }
 }

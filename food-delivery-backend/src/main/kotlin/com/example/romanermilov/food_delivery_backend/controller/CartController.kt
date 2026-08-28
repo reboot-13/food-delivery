@@ -24,11 +24,11 @@ class CartController (
     }
 
     @PostMapping("/items")
-    fun createCartItem(@RequestBody addItemRequest: AddCartItemRequest) : CartItemResponse {
+    fun addCartItem(@RequestBody addItemRequest: AddCartItemRequest) : CartItemResponse {
         return cartItemService.addItem(addItemRequest)
     }
 
-    @PatchMapping("/items/{id}")
+    @PatchMapping("/items/{productId}")
     fun updateQuantity(
         @PathVariable("productId") productId : Long,
         @RequestBody quantityRequest: UpdateCartItemQuantityRequest
@@ -36,7 +36,7 @@ class CartController (
         return cartItemService.updateQuantity(productId, quantityRequest.quantity)
     }
 
-    @DeleteMapping("/items/{id}")
+    @DeleteMapping("/items/{productId}")
     fun deleteCartItem(@PathVariable("productId") productId : Long) {
         cartItemService.deleteItem(productId)
     }
