@@ -1,6 +1,5 @@
 package com.example.fooddeliveryandroid.data.repository
 
-import com.example.fooddeliveryandroid.data.local.entity.CartItemEntity
 import com.example.fooddeliveryandroid.data.remote.dto.request.AddCartItemRequest
 import com.example.fooddeliveryandroid.data.remote.dto.request.UpdateCartItemQuantityRequest
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
@@ -43,6 +42,8 @@ class CartRepository @Inject constructor(
     suspend fun addCartItem(request: AddCartItemRequest): NetworkResult<CartItem> {
         return safeApiCall {
             val cartItem = cartRemoteDataSource.addCartItem(request)
+            val cartItemEntity = CartItemMapper.responseToEntity(cartItem)
+            cartLocalDataSource.insert(cartItemEntity)
             CartItemMapper.responseToModel(cartItem)
         }
     }
@@ -50,13 +51,20 @@ class CartRepository @Inject constructor(
     suspend fun updateQuantity(productId: Long, request: UpdateCartItemQuantityRequest): NetworkResult<CartItem> {
         return safeApiCall {
             val cartItem = cartRemoteDataSource.updateQuantity(productId, request)
+            val cartItemEntity = CartItemMapper.responseToEntity(cartItem)
+            cartLocalDataSource.updateQuantity(cartItemEntity.productId, cartItemEntity.quantity)
             CartItemMapper.responseToModel(cartItem)
         }
+    }
+
+    suspend fun clearLocalCartItems() {
+        cartLocalDataSource.clear()
     }
 
     suspend fun deleteCartItem(productId: Long): NetworkResult<Unit> {
         return safeApiCall {
             cartRemoteDataSource.deleteCartItem(productId)
+            cartLocalDataSource.delete(productId)
         }
     }
 }

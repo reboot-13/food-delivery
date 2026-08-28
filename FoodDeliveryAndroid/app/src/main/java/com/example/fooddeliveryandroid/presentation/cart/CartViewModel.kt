@@ -1,6 +1,5 @@
 package com.example.fooddeliveryandroid.presentation.cart
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fooddeliveryandroid.data.local.datastore.UserSession
@@ -12,8 +11,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.WhileSubscribed
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -22,13 +22,21 @@ import javax.inject.Inject
 @HiltViewModel
 class CartViewModel @Inject constructor (
     private val cartRepository: CartRepository,
-    userSession: UserSession
+    private val userSession: UserSession
 ): ViewModel() {
     private val _uiState = MutableStateFlow<CartUIState>(CartUIState.Loading)
-    val uiState: StateFlow<CartUIState> = cartRepository
-        .observeCartItems()
-        .map<List<CartItem>, CartUIState> { cartItems ->
-            CartUIState.Success(cartItems)
+    val uiState: StateFlow<CartUIState> =
+        userSession.currentUser
+        .flatMapLatest { user ->
+            if (user == null) {
+                flowOf(CartUIState.Unauthorized)
+            } else {
+                cartRepository
+                    .observeCartItems()
+                    .map<List<CartItem>, CartUIState> { cartItems ->
+                        CartUIState.Success(cartItems)
+                    }
+            }
         }
         .stateIn(
             viewModelScope,
@@ -38,11 +46,11 @@ class CartViewModel @Inject constructor (
 
     init {
         viewModelScope.launch {
-            if (userSession.currentUser.value == null) {
-                _uiState.value = CartUIState.Unauthorized
-            } else {
-                loadCartItems()
-            }
+            userSession.currentUser
+                .filterNotNull()
+                .collect {
+                    cartRepository.syncCart()
+                }
         }
     }
 
@@ -65,24 +73,13 @@ class CartViewModel @Inject constructor (
         _uiState.value = CartUIState.Success(updatedItems)
     }
 
-    private fun removeItemInState(productId: Long) {
-        val currentState = _uiState.value
-        if (currentState !is CartUIState.Success) return
-
-        val updatedItems = currentState.cartItems.filter { cartItem ->
-            cartItem.product.id != productId
-        }
-
-        _uiState.value = CartUIState.Success(updatedItems)
-    }
-
     fun updateCartItemQuantity(productId: Long, quantity: Int) {
         viewModelScope.launch {
             if (quantity < 1) {
                 when (cartRepository.deleteCartItem(productId)) {
-                    is NetworkResult.Success ->
-                        removeItemInState(productId)
+                    is NetworkResult.Success -> {
 
+                    }
                     is NetworkResult.Error ->
                         _uiState.value = CartUIState.Error("Не удалось удалить товар из корзины")
                 }
@@ -94,7 +91,6 @@ class CartViewModel @Inject constructor (
             )
             when (val updateResult = cartRepository.updateQuantity(productId, request)) {
                 is NetworkResult.Success -> {
-                    updateQuantityInState(productId, updateResult.data)
                 }
 
                 is NetworkResult.Error ->

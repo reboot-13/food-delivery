@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fooddeliveryandroid.data.local.datastore.UserSession
 import com.example.fooddeliveryandroid.data.remote.dto.request.AddCartItemRequest
+import com.example.fooddeliveryandroid.data.remote.dto.request.UpdateCartItemQuantityRequest
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.repository.CartRepository
 import com.example.fooddeliveryandroid.data.repository.CatalogRepository
@@ -22,6 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CatalogViewModel @Inject constructor(
     private val catalogRepository: CatalogRepository,
+    private val cartRepository: CartRepository,
+    private val userSession: UserSession
 ) : ViewModel(){
     val uiState: StateFlow<CatalogUIState> =
         catalogRepository
@@ -37,6 +40,37 @@ class CatalogViewModel @Inject constructor(
 
     init {
         loadCatalog()
+    }
+
+    fun updateQuantity(productId: Long, quantity: Int) {
+        val request = UpdateCartItemQuantityRequest (quantity)
+        viewModelScope.launch {
+            if (quantity < 1) {
+                cartRepository.deleteCartItem(productId)
+                return@launch
+            }
+            cartRepository.updateQuantity(productId, request)
+        }
+
+    }
+
+    fun addProductToCart(productId: Long) {
+        if (userSession.currentUser.value == null) {
+            //show authBanner
+            return
+        }
+        viewModelScope.launch {
+            val request = AddCartItemRequest(productId)
+            when (val result = cartRepository.addCartItem(request)) {
+                is NetworkResult.Success -> {
+                    // Ничего дополнительно делать не нужно
+                }
+
+                is NetworkResult.Error -> {
+                    // показать ошибку
+                }
+            }
+        }
     }
 
     fun loadCatalog() {

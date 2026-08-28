@@ -43,6 +43,7 @@ import com.example.fooddeliveryandroid.domain.model.CatalogProduct
 import com.example.fooddeliveryandroid.domain.model.Category
 import com.example.fooddeliveryandroid.domain.model.Product
 import com.example.fooddeliveryandroid.presentation.cart.ProductImage
+import com.example.fooddeliveryandroid.presentation.cart.QuantitySelector
 import kotlinx.coroutines.launch
 
 @Composable
@@ -62,7 +63,10 @@ fun CatalogScreen (
 
                 },
                 onAddToCart = { productId ->
-
+                    catalogViewModel.addProductToCart(productId)
+                },
+                onUpdateQuantity = { productId, quantity ->
+                    catalogViewModel.updateQuantity(productId, quantity)
                 }
             )
         }
@@ -76,7 +80,8 @@ fun CatalogSuccess(
     categories: List<Category>,
     products: List<CatalogProduct>,
     onProductClick: (Long) -> Unit,
-    onAddToCart: (Long) -> Unit
+    onAddToCart: (Long) -> Unit,
+    onUpdateQuantity: (Long, Int) -> Unit
 ) {
     val listState = rememberLazyListState()
     val productsByCategory = remember(products) {
@@ -123,7 +128,8 @@ fun CatalogSuccess(
                 category = category,
                 products = productsByCategory[category.id].orEmpty(),
                 onProductClick = onProductClick,
-                onAddToCart = onAddToCart
+                onAddToCart = onAddToCart,
+                onUpdateQuantity = onUpdateQuantity
             )
         }
     }
@@ -169,7 +175,8 @@ fun CategorySection(
     category: Category,
     products: List<CatalogProduct>,
     onProductClick: (Long) -> Unit,
-    onAddToCart: (Long) -> Unit
+    onAddToCart: (Long) -> Unit,
+    onUpdateQuantity: (Long, Int) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -190,7 +197,8 @@ fun CategorySection(
                     product = catalogProduct.product,
                     quantity = catalogProduct.quantity,
                     onProductClick = onProductClick,
-                    onAddToCart = onAddToCart
+                    onAddToCart = onAddToCart,
+                    onUpdateQuantity = onUpdateQuantity
                 )
             }
         }
@@ -202,7 +210,8 @@ fun ProductCard (
     product: Product,
     quantity: Int,
     onProductClick: (Long) -> Unit,
-    onAddToCart: (Long) -> Unit){
+    onAddToCart: (Long) -> Unit,
+    onUpdateQuantity: (Long, Int) -> Unit){
     Card(
         onClick = { onProductClick(product.id) },
         modifier = Modifier
@@ -216,17 +225,36 @@ fun ProductCard (
                 imageUrl = product.imageUrl,
                 imageDescription = product.name
             )
-            Button(
-                onClick = { onAddToCart(product.id) }
-            ) {
-                Text("В корзину")
-            }
+            CatalogQuantitySelector(
+                productId = product.id,
+                quantity = quantity,
+                onAddToCart = onAddToCart,
+                onUpdateQuantity = { quantity ->
+                    onUpdateQuantity (product.id, quantity)
+                }
+            )
         }
     }
 }
 
 @Composable
-fun CatalogQuantitySelector (quantity: Int){
+fun CatalogQuantitySelector (
+    productId: Long,
+    quantity: Int,
+    onAddToCart: (Long) -> Unit,
+    onUpdateQuantity: (Int) -> Unit){
+    if (quantity < 1) {
+        Button(
+            onClick = { onAddToCart(productId) }
+        ) {
+            Text("В корзину")
+        }
+    } else {
+        QuantitySelector(
+            quantity = quantity,
+            onUpdateQuantity = onUpdateQuantity
+        )
+    }
 
 }
 

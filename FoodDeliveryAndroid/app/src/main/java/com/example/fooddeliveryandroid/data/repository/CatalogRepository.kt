@@ -1,6 +1,7 @@
 package com.example.fooddeliveryandroid.data.repository
 
 import com.example.fooddeliveryandroid.data.local.datastore.UserSession
+import com.example.fooddeliveryandroid.data.remote.dto.request.AddCartItemRequest
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.domain.model.CatalogData
 import com.example.fooddeliveryandroid.domain.model.CatalogProduct
