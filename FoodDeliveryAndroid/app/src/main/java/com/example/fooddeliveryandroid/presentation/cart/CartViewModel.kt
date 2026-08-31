@@ -8,6 +8,7 @@ import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.repository.CartRepository
 import com.example.fooddeliveryandroid.domain.model.CartItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,7 @@ class CartViewModel @Inject constructor (
     private val userSession: UserSession
 ): ViewModel() {
     private val _uiState = MutableStateFlow<CartUIState>(CartUIState.Loading)
+    @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<CartUIState> =
         userSession.currentUser
         .flatMapLatest { user ->
@@ -49,7 +51,7 @@ class CartViewModel @Inject constructor (
             userSession.currentUser
                 .filterNotNull()
                 .collect {
-                    cartRepository.syncCart()
+                    loadCartItems()
                 }
         }
     }
@@ -59,18 +61,6 @@ class CartViewModel @Inject constructor (
         if (cartDataResult is NetworkResult.Error) {
             TODO("обработать ошибку синхронизации")
         }
-    }
-
-    private fun updateQuantityInState(productId: Long, updatedItem: CartItem) {
-        val currentState = _uiState.value
-        if (currentState !is CartUIState.Success) return
-        val updatedItems = currentState.cartItems.map { cartItem ->
-            if (cartItem.product.id == productId) {
-                cartItem.copy(quantity = updatedItem.quantity)
-            } else
-                cartItem
-        }
-        _uiState.value = CartUIState.Success(updatedItems)
     }
 
     fun updateCartItemQuantity(productId: Long, quantity: Int) {
@@ -89,7 +79,7 @@ class CartViewModel @Inject constructor (
             val request = UpdateCartItemQuantityRequest(
                 quantity = quantity
             )
-            when (val updateResult = cartRepository.updateQuantity(productId, request)) {
+            when (cartRepository.updateQuantity(productId, request)) {
                 is NetworkResult.Success -> {
                 }
 

@@ -1,8 +1,6 @@
 package com.example.fooddeliveryandroid.data.repository
 
-import com.example.fooddeliveryandroid.data.local.entity.ProductEntity
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
-import com.example.fooddeliveryandroid.data.remote.network.api.ProductApi
 import com.example.fooddeliveryandroid.data.remote.network.safeApiCall
 import com.example.fooddeliveryandroid.data.repository.productSource.ProductLocalDataSource
 import com.example.fooddeliveryandroid.data.repository.productSource.ProductRemoteDataSource
@@ -26,6 +24,14 @@ class ProductRepository @Inject constructor(
         }
     }
 
+    fun observeProductById(productId: Long): Flow<Product>{
+
+        return productLocalDataSource.observeProductById(productId).map { product ->
+            ProductMapper.productWithCategoryToProduct(product)
+        }
+
+    }
+
     suspend fun syncProducts(): NetworkResult<Unit> {
         return safeApiCall {
             val products = productRemoteDataSource.getProducts()
@@ -35,13 +41,4 @@ class ProductRepository @Inject constructor(
             productLocalDataSource.insertAll(entities)
         }
     }
-
-
-    suspend fun getProductById(productId: Long): NetworkResult<Product> =
-        safeApiCall {
-            val response = productRemoteDataSource.getProductById(productId)
-            ProductMapper.responseToModel(
-                response
-            )
-        }
 }

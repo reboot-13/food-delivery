@@ -13,11 +13,15 @@ data class ProductEntity (
 
     val name: String,
 
+    val description: String?,
+
     val price: BigDecimal,
 
     val imageUrl: String?,
 
     val weight: Short?,
+
+    val calories: Short? ,
 
     val available: Boolean,
 

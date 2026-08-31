@@ -13,14 +13,14 @@ class ProductService (
     private val productRepository: ProductRepository
 ){
     @Transactional
-    fun getAllProducts(): List<ShortProductResponse>{
+    fun getAllProducts(): List<ProductResponse>{
         return productRepository.findByAvailableTrue()
-            .map(ProductMapper::toShortResponse)
+            .map(ProductMapper::toResponse)
     }
     @Transactional
-    fun getAllProductsByCategoryId(categoryId: Long): List<ShortProductResponse>{
+    fun getAllProductsByCategoryId(categoryId: Long): List<ProductResponse>{
         return productRepository.findByCategoryIdAndAvailableTrue(categoryId)
-            .map(ProductMapper::toShortResponse)
+            .map(ProductMapper::toResponse)
     }
 
     @Transactional

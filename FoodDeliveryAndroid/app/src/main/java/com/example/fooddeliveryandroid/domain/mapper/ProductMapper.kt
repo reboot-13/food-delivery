@@ -4,26 +4,10 @@ import com.example.fooddeliveryandroid.data.local.entity.ProductEntity
 import com.example.fooddeliveryandroid.data.local.room.relation.ProductWithCategory
 import com.example.fooddeliveryandroid.data.remote.dto.ProductCartItemResponse
 import com.example.fooddeliveryandroid.data.remote.dto.ProductResponse
-import com.example.fooddeliveryandroid.data.remote.dto.ShortProductResponse
 import com.example.fooddeliveryandroid.domain.model.Product
-import com.example.fooddeliveryandroid.presentation.navigation.Screen
 
 object ProductMapper {
-    fun responseToModel(productResponse: ProductResponse): Product{
-        return Product(
-            id = productResponse.id,
-            name = productResponse.name,
-            description = productResponse.description,
-            imageUrl = productResponse.imageUrl,
-            price = productResponse.price,
-            weight = productResponse.weight,
-            calories = productResponse.calories,
-            category = CategoryMapper.responseToModel(productResponse.category),
-            available = productResponse.available
-        )
-    }
-
-    fun responseToEntity(productResponse: ShortProductResponse): ProductEntity {
+    fun responseToEntity(productResponse: ProductResponse): ProductEntity {
         return ProductEntity(
             id = productResponse.id,
             name = productResponse.name,
@@ -31,7 +15,9 @@ object ProductMapper {
             price = productResponse.price,
             weight = productResponse.weight,
             categoryId = productResponse.category.id,
-            available = productResponse.available
+            available = productResponse.available,
+            description = productResponse.description,
+            calories = productResponse.calories
         )
     }
 
@@ -40,6 +26,8 @@ object ProductMapper {
             id = productWithCategory.product.id,
             name = productWithCategory.product.name,
             imageUrl = productWithCategory.product.imageUrl,
+            description = productWithCategory.product.description,
+            calories = productWithCategory.product.calories,
             price = productWithCategory.product.price,
             weight = productWithCategory.product.weight,
             category = CategoryMapper.entityToModel(productWithCategory.category),
@@ -47,29 +35,6 @@ object ProductMapper {
         )
     }
 
-    fun responseToModel(productResponse: ShortProductResponse): Product {
-        return Product(
-            id = productResponse.id,
-            name = productResponse.name,
-            imageUrl = productResponse.imageUrl,
-            price = productResponse.price,
-            category = CategoryMapper.responseToModel(productResponse.category),
-            available = productResponse.available
-        )
-    }
-//
-//    fun withProductToProduct(productEntity: ProductEntity): Product {
-//        return Product (
-//                id = productEntity.id,
-//                name = productEntity.name,
-//                imageUrl = productEntity.imageUrl,
-//                price = productEntity.price,
-//                weight = productEntity.weight,
-//                category = productEntity.,
-//                available = productWithCategory.product.available
-//
-//        )
-//    }
 
     fun responseToModel(productResponse: ProductCartItemResponse): Product {
         return Product(

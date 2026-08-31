@@ -1,10 +1,10 @@
 package com.example.fooddeliveryandroid.data.repository
 
 import com.example.fooddeliveryandroid.data.local.datastore.UserSession
-import com.example.fooddeliveryandroid.data.remote.dto.request.AddCartItemRequest
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.domain.model.CatalogData
 import com.example.fooddeliveryandroid.domain.model.CatalogProduct
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +20,33 @@ class CatalogRepository @Inject constructor(
     private val userSession: UserSession
 ) {
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun observeCartItemById(productId: Long): Flow<CatalogProduct> {
+        return userSession.currentUser.flatMapLatest { user ->
+            val productFlow = productRepository.observeProductById(productId)
+            if (user == null) {
+                productFlow.map { product ->
+                    CatalogProduct(
+                        product = product,
+                        quantity = 0
+                    )
+                }
+
+            } else {
+                combine(
+                    productFlow,
+                    cartRepository.observeCartItemById(productId)
+                ) { product, cartItem ->
+                    CatalogProduct(
+                        product = product,
+                        quantity = cartItem?.quantity ?: 0
+                    )
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun observeCatalogData(): Flow<CatalogData> {
         return userSession.currentUser.flatMapLatest { user ->
             if (user == null) {

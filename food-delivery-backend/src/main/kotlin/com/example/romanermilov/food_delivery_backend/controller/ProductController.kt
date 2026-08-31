@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/products")
 class ProductController (val productService: ProductService) {
     @GetMapping
-    fun getProducts(@RequestParam(required = false) categoryId: Long?): List<ShortProductResponse> {
+    fun getProducts(@RequestParam(required = false) categoryId: Long?): List<ProductResponse> {
         return if (categoryId == null) productService.getAllProducts()
         else productService.getAllProductsByCategoryId(categoryId)
     }

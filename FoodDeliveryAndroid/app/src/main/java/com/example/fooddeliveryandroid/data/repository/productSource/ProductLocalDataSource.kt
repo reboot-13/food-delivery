@@ -17,4 +17,8 @@ class ProductLocalDataSource @Inject constructor(
     suspend fun insertAll(products: List<ProductEntity>) {
         productDao.insertAll(products)
     }
+
+    fun observeProductById(productId: Long): Flow<ProductWithCategory> {
+        return productDao.observeProductById(productId)
+    }
 }

@@ -16,7 +16,8 @@ import com.example.fooddeliveryandroid.data.local.room.dao.ProductDao
         CartItemEntity::class,
         ProductEntity::class,
         CategoryEntity::class],
-    version = 1
+    version = 2,
+    exportSchema = false
 )
 @TypeConverters(BigDecimalConverter::class)
 abstract class AppDataBase(): RoomDatabase() {

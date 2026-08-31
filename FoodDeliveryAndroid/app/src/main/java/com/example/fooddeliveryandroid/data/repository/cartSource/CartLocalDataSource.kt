@@ -14,8 +14,8 @@ class CartLocalDataSource @Inject constructor(
         return cartItemDao.observeCartItems()
     }
 
-    suspend fun getCartItem(productId: Long): CartItemEntity? {
-        return cartItemDao.getByProductId(productId)
+    fun observeCartItemById(productId: Long): Flow<CartItemWithProduct?> {
+        return cartItemDao.observeCartItemById(productId)
     }
 
     suspend fun insert(item: CartItemEntity) {

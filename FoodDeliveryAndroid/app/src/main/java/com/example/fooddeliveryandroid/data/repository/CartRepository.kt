@@ -1,5 +1,6 @@
 package com.example.fooddeliveryandroid.data.repository
 
+import com.example.fooddeliveryandroid.data.local.room.relation.CartItemWithProduct
 import com.example.fooddeliveryandroid.data.remote.dto.request.AddCartItemRequest
 import com.example.fooddeliveryandroid.data.remote.dto.request.UpdateCartItemQuantityRequest
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
@@ -55,6 +56,10 @@ class CartRepository @Inject constructor(
             cartLocalDataSource.updateQuantity(cartItemEntity.productId, cartItemEntity.quantity)
             CartItemMapper.responseToModel(cartItem)
         }
+    }
+
+    fun observeCartItemById(productId: Long): Flow<CartItemWithProduct?> {
+        return cartLocalDataSource.observeCartItemById(productId)
     }
 
     suspend fun clearLocalCartItems() {

@@ -1,13 +1,11 @@
 package com.example.fooddeliveryandroid.data.local.room.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.fooddeliveryandroid.data.local.entity.CartItemEntity
 import com.example.fooddeliveryandroid.data.local.room.relation.CartItemWithProduct
-import com.example.fooddeliveryandroid.domain.model.Product
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -44,13 +42,35 @@ interface CartItemDao {
     fun observeQuantity(productId: Long): Flow<Int>
 
     @Query("""
-        SELECT * 
-        FROM cart_items
-        WHERE productId = :productId
+        SELECT
+            ci.productId AS productId,
+            ci.quantity AS quantity,
+            
+            p.name AS productName,
+            p.description AS description,
+            p.price AS price,
+            p.imageUrl AS imageUrl,
+            p.weight AS weight,
+            p.calories AS calories,
+            p.available AS available,
+
+            c.id AS categoryId,
+            c.name AS categoryName
+
+        FROM cart_items ci 
+
+        INNER JOIN products p
+            ON ci.productId = p.id
+
+        INNER JOIN categories c
+            ON p.categoryId = c.id
+
+        WHERE ci.productId = :productId
+        
     """)
-    suspend fun getByProductId(
+    fun observeCartItemById(
         productId: Long
-    ): CartItemEntity?
+    ): Flow <CartItemWithProduct?>
 
     @Insert (onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: CartItemEntity)

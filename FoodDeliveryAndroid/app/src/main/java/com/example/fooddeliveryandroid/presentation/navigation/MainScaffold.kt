@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.fooddeliveryandroid.presentation.cart.CartScreen
 import com.example.fooddeliveryandroid.presentation.catalog.CatalogScreen
 import com.example.fooddeliveryandroid.presentation.navigation.bottomBar.BottomBar
+import com.example.fooddeliveryandroid.presentation.product.ProductScreen
 import com.example.fooddeliveryandroid.presentation.profile.ProfileScreen
 
 @Composable
@@ -44,7 +45,11 @@ fun MainScaffold(
             )
         ) {
             composable(Screen.Catalog.route) {
-                CatalogScreen()
+                CatalogScreen(
+                    onProductClick = { productId ->
+                        mainNavController.navigate(Screen.Product.createRoute(productId))
+                    }
+                )
             }
             composable (Screen.Profile.route) {
                 ProfileScreen(
@@ -59,6 +64,12 @@ fun MainScaffold(
                         mainNavController.navigate(Screen.Profile.route)
                     }
                 )
+            }
+
+            composable(
+                route = Screen.Product.route
+            ) {
+                ProductScreen()
             }
         }
 
