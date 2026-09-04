@@ -3,27 +3,38 @@ package com.example.fooddeliveryandroid.presentation.catalog
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,12 +43,13 @@ import com.example.fooddeliveryandroid.domain.model.Category
 import com.example.fooddeliveryandroid.domain.model.Product
 import com.example.fooddeliveryandroid.presentation.cart.ProductImage
 import com.example.fooddeliveryandroid.presentation.cart.QuantitySelector
+import com.example.fooddeliveryandroid.presentation.product.ProductScreen
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @Composable
 fun CatalogScreen (
     catalogViewModel: CatalogViewModel = hiltViewModel(),
-    onProductClick: (Long) -> Unit
 ){
     val uiState = catalogViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -48,9 +60,6 @@ fun CatalogScreen (
             CatalogSuccess(
                 categories = state.catalogData.categories,
                 products = state.catalogData.products,
-                onProductClick = { productId ->
-                    onProductClick(productId)
-                },
                 onAddToCart = { productId ->
                     catalogViewModel.addProductToCart(productId)
                 },
@@ -64,11 +73,11 @@ fun CatalogScreen (
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatalogSuccess(
     categories: List<Category>,
     products: List<CatalogProduct>,
-    onProductClick: (Long) -> Unit,
     onAddToCart: (Long) -> Unit,
     onUpdateQuantity: (Long, Int) -> Unit
 ) {
@@ -88,6 +97,26 @@ fun CatalogSuccess(
                 }
                 ?.index
                 ?.minus(1)
+        }
+    }
+    var selectedProductId by rememberSaveable() {
+        mutableStateOf<Long?>(null)
+    }
+
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    if (selectedProductId != null) {
+        ModalBottomSheet(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(top = 80.dp),
+            onDismissRequest = {selectedProductId = null},
+            sheetState = sheetState,
+
+
+        ) {
+            ProductScreen(productId = selectedProductId!!)
         }
     }
 
@@ -116,7 +145,9 @@ fun CatalogSuccess(
             CategorySection(
                 category = category,
                 products = productsByCategory[category.id].orEmpty(),
-                onProductClick = onProductClick,
+                onProductClick = {productId ->
+                    selectedProductId = productId
+                },
                 onAddToCart = onAddToCart,
                 onUpdateQuantity = onUpdateQuantity
             )
@@ -212,7 +243,9 @@ fun ProductCard (
             Text(product.name)
             ProductImage(
                 imageUrl = product.imageUrl,
-                imageDescription = product.name
+                imageDescription = product.name,
+                modifier = Modifier
+                    .size(100.dp)
             )
             CatalogQuantitySelector(
                 productId = product.id,
@@ -244,7 +277,6 @@ fun CatalogQuantitySelector (
             onUpdateQuantity = onUpdateQuantity
         )
     }
-
 }
 
 @Composable

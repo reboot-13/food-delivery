@@ -45,11 +45,7 @@ fun MainScaffold(
             )
         ) {
             composable(Screen.Catalog.route) {
-                CatalogScreen(
-                    onProductClick = { productId ->
-                        mainNavController.navigate(Screen.Product.createRoute(productId))
-                    }
-                )
+                CatalogScreen()
             }
             composable (Screen.Profile.route) {
                 ProfileScreen(
@@ -65,13 +61,6 @@ fun MainScaffold(
                     }
                 )
             }
-
-            composable(
-                route = Screen.Product.route
-            ) {
-                ProductScreen()
-            }
         }
-
     }
 }

@@ -1,14 +1,24 @@
 package com.example.fooddeliveryandroid.presentation.product
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fooddeliveryandroid.data.local.datastore.UserSession
+import com.example.fooddeliveryandroid.data.remote.dto.request.AddCartItemRequest
+import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.repository.CartRepository
 import com.example.fooddeliveryandroid.data.repository.CatalogRepository
+import com.example.fooddeliveryandroid.domain.model.CatalogProduct
+import com.example.fooddeliveryandroid.domain.useCase.QuantityUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -16,17 +26,57 @@ class ProductViewModel @Inject constructor(
     private val userSession: UserSession,
     private val catalogRepository: CatalogRepository,
     private val cartRepository: CartRepository,
-    savedStateHandle: SavedStateHandle
+    private val quantityUpdater: QuantityUpdater
 ): ViewModel() {
 
-    private val productId: Long = checkNotNull(savedStateHandle.get<String>("productId")).toLong()
-    val product =
-        catalogRepository
-            .observeCartItemById(productId)
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5_000),
-                initialValue = null
-            )
+    private val productId = MutableStateFlow<Long?>(null)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val product: StateFlow<CatalogProduct?> = productId
+        .filterNotNull()
+        .flatMapLatest { productId ->
+            catalogRepository
+                .observeCartItemById(productId)
+                .map { (product, quantity) ->
+                    CatalogProduct(product, quantity)
+                }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null
+        )
+
+
+    fun loadProduct(productId: Long) {
+        this.productId.value = productId
+    }
+
+    fun updateQuantity(productId: Long, quantity: Int) {
+        viewModelScope.launch {
+            val updateResult = quantityUpdater.updateQuantity(productId, quantity)
+            if (updateResult is NetworkResult.Error) {
+                TODO("обработать ошибку, например, SnackBar")
+            }
+        }
+    }
+
+    fun addProductToCart(productId: Long) {
+        if (userSession.currentUser.value == null) {
+            //show authBanner
+            return
+        }
+        viewModelScope.launch {
+            val request = AddCartItemRequest(productId)
+            when (val result = cartRepository.addCartItem(request)) {
+                is NetworkResult.Success -> {
+                    // Ничего дополнительно делать не нужно
+                }
+
+                is NetworkResult.Error -> {
+                    // показать ошибку
+                }
+            }
+        }
+    }
 }

@@ -9,6 +9,7 @@ import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.repository.CartRepository
 import com.example.fooddeliveryandroid.data.repository.CatalogRepository
 import com.example.fooddeliveryandroid.domain.model.CatalogData
+import com.example.fooddeliveryandroid.domain.useCase.QuantityUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +25,8 @@ import javax.inject.Inject
 class CatalogViewModel @Inject constructor(
     private val catalogRepository: CatalogRepository,
     private val cartRepository: CartRepository,
-    private val userSession: UserSession
+    private val userSession: UserSession,
+    private val quantityUpdater: QuantityUpdater
 ) : ViewModel(){
     val uiState: StateFlow<CatalogUIState> =
         catalogRepository
@@ -43,15 +45,12 @@ class CatalogViewModel @Inject constructor(
     }
 
     fun updateQuantity(productId: Long, quantity: Int) {
-        val request = UpdateCartItemQuantityRequest (quantity)
         viewModelScope.launch {
-            if (quantity < 1) {
-                cartRepository.deleteCartItem(productId)
-                return@launch
+            val updateResult = quantityUpdater.updateQuantity(productId, quantity)
+            if (updateResult is NetworkResult.Error) {
+                TODO("обработать ошибку, например, SnackBar")
             }
-            cartRepository.updateQuantity(productId, request)
         }
-
     }
 
     fun addProductToCart(productId: Long) {

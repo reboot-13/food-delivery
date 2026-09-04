@@ -99,7 +99,9 @@ fun CartItemCard(
         ) {
             ProductImage(
                 imageUrl = cartItem.product.imageUrl,
-                imageDescription = cartItem.product.name
+                imageDescription = cartItem.product.name,
+                modifier = Modifier
+                    .size(80.dp)
             )
             Text(cartItem.product.name)
             QuantitySelector(
@@ -113,19 +115,18 @@ fun CartItemCard(
 @Composable
 fun ProductImage(
     imageUrl: String?,
-    imageDescription: String
+    imageDescription: String,
+    modifier: Modifier = Modifier
 ) {
     AsyncImage(
         model = imageUrl,
         contentDescription = imageDescription,
         placeholder = painterResource( R.drawable.empty_product_image),
         error = painterResource(R.drawable.empty_product_image),
-        modifier = Modifier
-            .size(80.dp)
-            .clip(RoundedCornerShape(12.dp)),
 
-        contentScale = ContentScale.Crop
-    )
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp)),
+        contentScale = ContentScale.Crop)
 }
 
 @Composable
