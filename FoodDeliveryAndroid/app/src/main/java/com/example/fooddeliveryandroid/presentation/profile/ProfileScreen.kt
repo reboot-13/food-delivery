@@ -2,7 +2,6 @@ package com.example.fooddeliveryandroid.presentation.profile
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fooddeliveryandroid.domain.model.User
+import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 
 @Composable
 fun ProfileScreen (
@@ -20,8 +20,8 @@ fun ProfileScreen (
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val validationState = viewModel.validationState.collectAsStateWithLifecycle()
     when (val state = uiState.value) {
-        is ProfileUIState.Loading ->
-            CircularProgressIndicator()
+
+        is ProfileUIState.Loading -> LoadingProcess()
 
         is ProfileUIState.UnauthorizedRegister ->
             RegisterForm(

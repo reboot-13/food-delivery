@@ -49,6 +49,7 @@ import com.example.fooddeliveryandroid.presentation.AppSnackBar
 import com.example.fooddeliveryandroid.presentation.cart.ProductImage
 import com.example.fooddeliveryandroid.presentation.cart.QuantitySelector
 import com.example.fooddeliveryandroid.presentation.product.ProductScreen
+import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 
@@ -81,7 +82,15 @@ fun CatalogScreen (
         },
     ) { paddingValues ->
         when(val state = uiState.value) {
-            is CatalogUIState.Loading -> CircularProgressIndicator()
+            is CatalogUIState.Loading -> {
+                Box(Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(32.dp)
+                    )
+                }
+            }
             is CatalogUIState.Success -> {
 
                 CatalogSuccess(
@@ -104,14 +113,7 @@ fun CatalogScreen (
             }
             is CatalogUIState.Error -> Text(state.message)
             CatalogUIState.Loading -> {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ){
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                LoadingProcess()
             }
         }
     }

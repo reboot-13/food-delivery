@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.fooddeliveryandroid.R
 import com.example.fooddeliveryandroid.domain.model.CartItem
+import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 
 @Composable
 fun CartScreen (
@@ -42,7 +43,7 @@ fun CartScreen (
 
     when (uiState.value) {
         is CartUIState.Loading ->
-            CircularProgressIndicator()
+            LoadingProcess()
 
         is CartUIState.Error ->
             Text((uiState.value as CartUIState.Error).message)
