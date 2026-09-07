@@ -5,7 +5,6 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.example.fooddeliveryandroid.R
 import com.example.fooddeliveryandroid.presentation.navigation.Screen
 
 sealed class BottomDestination (
