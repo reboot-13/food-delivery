@@ -1,11 +1,13 @@
 package com.example.fooddeliveryandroid.presentation.catalog
 
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,10 +18,17 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -39,7 +48,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fooddeliveryandroid.domain.model.CatalogProduct
@@ -52,7 +63,9 @@ import com.example.fooddeliveryandroid.presentation.product.ProductScreen
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CatalogScreen (
     catalogViewModel: CatalogViewModel = hiltViewModel(),
@@ -80,21 +93,15 @@ fun CatalogScreen (
                     )
                 })
         },
-    ) { paddingValues ->
+    ) {  paddingValues ->
         when(val state = uiState.value) {
             is CatalogUIState.Loading -> {
-                Box(Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(32.dp)
-                    )
-                }
+                LoadingProcess()
             }
             is CatalogUIState.Success -> {
 
                 CatalogSuccess(
-                    modifier = Modifier.padding(paddingValues),
+
                     events = events,
                     categories = state.catalogData.categories,
                     products = state.catalogData.products,
@@ -173,18 +180,21 @@ fun CatalogSuccess(
         }
     }
 
+    //SnackBarManager
+    CatalogSnackBars(
+        snackBarHostState = snackBarHostState,
+        events = events,
+        onNavigateToAuthScreen = onNavigateToAuthScreen,
+        onSynchronize = onSynchronize
+    )
+
     LazyColumn(
         state = listState,
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
+            .padding(start = 12.dp)
     ) {
         stickyHeader {
-            CatalogSnackBars(
-                snackBarHostState = snackBarHostState,
-                events = events,
-                onNavigateToAuthScreen = onNavigateToAuthScreen,
-                onSynchronize = onSynchronize
-            )
             CategoryRow(
                 categories = categories,
                 currentCategoryIndex = currentCategoryIndex,
@@ -212,6 +222,9 @@ fun CatalogSuccess(
                 onUpdateQuantity = onUpdateQuantity
             )
         }
+        item {
+            Spacer(Modifier.height(500.dp))
+        }
     }
 }
 
@@ -221,10 +234,12 @@ fun CategoryRow(
     currentCategoryIndex: Int?,
     onCategoryClick: (Int) -> Unit) {
     val categoryListState = rememberLazyListState()
-
     LazyRow(
         state = categoryListState,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         itemsIndexed(
             items = categories,
@@ -234,10 +249,12 @@ fun CategoryRow(
         ) {index, category ->
             CategoryChip(
                 category = category,
+                isSelected = index == currentCategoryIndex,
                 onCategoryClick = {
                     onCategoryClick(index)
                 }
             )
+
         }
     }
     LaunchedEffect(currentCategoryIndex) {
@@ -248,6 +265,7 @@ fun CategoryRow(
                 currentCategoryIndex
             )
         }
+
     }
 }
 @Composable
@@ -264,7 +282,10 @@ fun CategorySection(
     ) {
         Text(
             text = category.name,
-            modifier = Modifier.padding(16.dp))
+            modifier = Modifier.padding(16.dp),
+            style = MaterialTheme.typography.labelLarge,
+            fontSize = 30.sp
+        )
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -295,20 +316,32 @@ fun ProductCard (
     Card(
         onClick = { onProductClick(product.id) },
         modifier = Modifier
-            .width(180.dp)
-            .height(150.dp),
+            .width(220.dp)
+            .height(260.dp),
 
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(product.name)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .padding(16.dp)) {
+
             ProductImage(
                 imageUrl = product.imageUrl,
                 imageDescription = product.name,
                 modifier = Modifier
-                    .size(100.dp)
+                    .size(120.dp)
+            )
+            Text(
+                text = product.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontSize = 18.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
             )
             CatalogQuantitySelector(
                 productId = product.id,
+                price = product.price,
                 quantity = quantity,
                 onAddToCart = onAddToCart,
                 onUpdateQuantity = { quantity ->
@@ -323,29 +356,70 @@ fun ProductCard (
 fun CatalogQuantitySelector (
     productId: Long,
     quantity: Int,
+    price: BigDecimal,
     onAddToCart: (Long) -> Unit,
     onUpdateQuantity: (Int) -> Unit){
-    if (quantity < 1) {
-        Button(
-            onClick = { onAddToCart(productId) }
-        ) {
-            Text("В корзину")
-        }
-    } else {
-        QuantitySelector(
-            quantity = quantity,
-            onUpdateQuantity = onUpdateQuantity
+    val iconButtonColors = IconButtonDefaults.iconButtonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
         )
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+    ) {
+        Text(
+            text = "$price ₽",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.weight(1f)
+        )
+        if (quantity < 1) {
+            IconButton(
+                onClick = { onAddToCart(productId)},
+                colors = iconButtonColors,
+                modifier = Modifier
+                    .clip(shape = CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Добавить в корзину",
+                )
+            }
+        } else {
+            QuantitySelector(
+                quantity = quantity,
+                onUpdateQuantity = onUpdateQuantity
+            )
+        }
     }
 }
 
 @Composable
 fun CategoryChip(
     category: Category,
-    onCategoryClick: () -> Unit
+    onCategoryClick: () -> Unit,
+    isSelected: Boolean
 ) {
-    Button(onClick = onCategoryClick) {
-        Text(category.name)
+    val buttonColors = if (!isSelected) {
+        ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
+    } else {
+        ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+    Button(
+        onClick = onCategoryClick,
+        colors = buttonColors,
+        modifier = Modifier
+            .padding(start = 12.dp)){
+        Text(text = category.name,
+            style = MaterialTheme.typography.bodySmall)
     }
 }
 

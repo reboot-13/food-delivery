@@ -1,4 +1,4 @@
-package com.example.romanermilov.food_delivery_backend.dto.response
+package com.example.fooddeliveryandroid.data.remote.dto.request
 
 data class CreateOrderItemRequest (
     val productId: Long,

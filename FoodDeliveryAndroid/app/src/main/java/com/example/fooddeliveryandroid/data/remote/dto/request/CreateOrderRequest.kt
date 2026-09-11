@@ -1,4 +1,4 @@
-package com.example.romanermilov.food_delivery_backend.dto.request
+package com.example.fooddeliveryandroid.data.remote.dto.request
 
 data class CreateOrderRequest (
     val items: List<CreateOrderItemRequest>

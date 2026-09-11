@@ -1,7 +1,7 @@
 package com.example.romanermilov.food_delivery_backend.service
 
 import com.example.romanermilov.food_delivery_backend.dto.request.CreateOrderRequest
-import com.example.romanermilov.food_delivery_backend.dto.response.CreateOrderItemRequest
+import com.example.romanermilov.food_delivery_backend.dto.request.CreateOrderItemRequest
 import com.example.romanermilov.food_delivery_backend.dto.response.OrderResponse
 import com.example.romanermilov.food_delivery_backend.entity.OrderEntity
 import com.example.romanermilov.food_delivery_backend.entity.OrderItemEntity
