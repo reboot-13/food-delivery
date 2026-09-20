@@ -1,4 +1,4 @@
-package com.example.fooddeliveryandroid.presentation.orders
+package com.example.fooddeliveryandroid.presentation.order.orders
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +36,7 @@ import com.example.fooddeliveryandroid.domain.model.Order
 import com.example.fooddeliveryandroid.domain.model.OrderItem
 import com.example.fooddeliveryandroid.domain.model.enums.OrderStatus
 import com.example.fooddeliveryandroid.presentation.cart.ProductImage
+import com.example.fooddeliveryandroid.presentation.order.orderDetails.OrderDetailsContent
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

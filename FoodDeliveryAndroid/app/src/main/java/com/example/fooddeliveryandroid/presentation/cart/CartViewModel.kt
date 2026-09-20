@@ -16,10 +16,12 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CartViewModel @Inject constructor (
     private val cartRepository: CartRepository,
@@ -28,7 +30,6 @@ class CartViewModel @Inject constructor (
     private val quantityUpdater: QuantityUpdater
 ): ViewModel() {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<CartUIState> =
         userSession.currentUser
         .flatMapLatest { user ->
@@ -55,6 +56,24 @@ class CartViewModel @Inject constructor (
                 initialValue = null
             )
 
+    val currentOrder = userSession
+        .lastCreatedOrderId
+        .mapLatest { orderId ->
+            if (orderId == null) {
+                null
+            } else {
+                when (val orderResult = orderRepository.getOrderById(orderId)){
+                    is NetworkResult.Error -> null
+
+                    is NetworkResult.Success -> orderResult.data
+                }
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null
+        )
 
     fun clearCreatedOrder() {
         viewModelScope.launch {

@@ -1,4 +1,4 @@
-package com.example.fooddeliveryandroid.presentation.orders
+package com.example.fooddeliveryandroid.presentation.order.orderDetails
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -18,10 +17,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,6 +32,7 @@ import com.example.fooddeliveryandroid.domain.model.Order
 import com.example.fooddeliveryandroid.domain.model.OrderItem
 import com.example.fooddeliveryandroid.domain.model.enums.OrderStatus
 import com.example.fooddeliveryandroid.presentation.cart.ProductImage
+import com.example.fooddeliveryandroid.presentation.order.OrderStatusBlockActive
 import java.math.BigDecimal
 
 @Composable
@@ -107,7 +105,7 @@ fun StatusBlock(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(8.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -150,41 +148,6 @@ fun OrderItemCard(orderItem: OrderItem) {
             )
         }
     }
-}
-
-@Composable
-fun OrderStatusBlockActive(activeStatus: OrderStatus) {
-    OrderStatus.entries
-        .dropLast(1)
-        .forEach { status ->
-            with(MaterialTheme.colorScheme) {
-                val bgColor = if (activeStatus >= status) primary else surface
-                val contentColor = if (activeStatus >= status) onPrimary else onSecondary
-                Surface(
-                    shape = RoundedCornerShape(32.dp),
-                    color = bgColor,
-                    contentColor = contentColor,
-                    modifier = Modifier
-                        .width(90.dp)
-
-                ) {
-                    Text(
-                        text = status.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .padding(6.dp)
-                    )
-                }
-                if (status != OrderStatus.COMPLETED) {
-                    HorizontalDivider(
-                        thickness = 3.dp,
-                        color = bgColor,
-                        modifier = Modifier.width(8.dp)
-                    )
-                }
-            }
-        }
 }
 
 @Composable

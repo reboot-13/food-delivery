@@ -56,6 +56,7 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 retrofit-gson-converter = {module = "com.squareup.retrofit2:converter-gson", version.ref = "gsonConverter"}
+materialExtendedIcons = {module = "androidx.compose.material:material-icons-extended"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -1,4 +1,4 @@
-package com.example.fooddeliveryandroid.presentation.orders
+package com.example.fooddeliveryandroid.presentation.order.orderDetails
 
 import com.example.fooddeliveryandroid.domain.model.Order
 

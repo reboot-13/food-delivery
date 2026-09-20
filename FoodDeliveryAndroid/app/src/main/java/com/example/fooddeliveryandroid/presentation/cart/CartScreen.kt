@@ -1,11 +1,15 @@
 package com.example.fooddeliveryandroid.presentation.cart
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -42,6 +48,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.fooddeliveryandroid.R
 import com.example.fooddeliveryandroid.domain.model.CartItem
+import com.example.fooddeliveryandroid.domain.model.Order
+import com.example.fooddeliveryandroid.presentation.order.OrderStatusBlockActive
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 
 @Composable
@@ -53,6 +61,7 @@ fun CartScreen (
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val createdOrderId by viewModel.createdOrderId.collectAsStateWithLifecycle()
+    val currentOrder by viewModel.currentOrder.collectAsStateWithLifecycle()
 
     when (val result = uiState.value) {
 
@@ -83,9 +92,12 @@ fun CartScreen (
 
             if (result.cartItems.isEmpty() && createdOrderId != null) {
                 OrderCreatedContent(
-                    orderId = createdOrderId!!,
+                    order = currentOrder,
                     onNavigateToCatalog = {
                         onGoToCatalog()
+                    },
+                    onShowOrder = {orderId ->
+                        onShowOrder(orderId)
                     }
                 )
             } else if (result.cartItems.isNotEmpty()) {
@@ -288,9 +300,30 @@ fun QuantitySelector(
 
 @Composable
 fun OrderCreatedContent(
-    orderId: Long,
-    onNavigateToCatalog: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    order: Order?,
+    onNavigateToCatalog: () -> Unit,
+    onShowOrder: (Long) -> Unit) {
+
+    val interactionSource = remember {
+        MutableInteractionSource()
+    }
+
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) {
+            0.97f
+        } else {
+            1f
+        },
+        animationSpec = tween(120),
+        label = "status_block_scale"
+    )
+
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .fillMaxHeight(0.85f)
+        .padding(horizontal = 16.dp)) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -311,6 +344,29 @@ fun OrderCreatedContent(
                 )
             }
         }
+        if (order != null) {
+            Surface(
+                onClick = {
+                    onShowOrder(order.id)
+                },
+                interactionSource = interactionSource,
+                shadowElevation = 2.dp,
+                shape = RoundedCornerShape(32.dp),
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                    }
+                    .padding(bottom = 12.dp)
+            ) {
+                OrderStatusBlockActive(
+                    activeStatus = order.status,
+                    withRightArrow = true
+                )
+            }
+        }
     }
-
 }

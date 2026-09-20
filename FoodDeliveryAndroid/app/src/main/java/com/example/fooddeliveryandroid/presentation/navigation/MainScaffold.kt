@@ -17,8 +17,8 @@ import androidx.navigation.navArgument
 import com.example.fooddeliveryandroid.presentation.cart.CartScreen
 import com.example.fooddeliveryandroid.presentation.catalog.CatalogScreen
 import com.example.fooddeliveryandroid.presentation.navigation.bottomBar.BottomBar
-import com.example.fooddeliveryandroid.presentation.orders.OrderDetailsScreen
-import com.example.fooddeliveryandroid.presentation.orders.OrderScreen
+import com.example.fooddeliveryandroid.presentation.order.orderDetails.OrderDetailsScreen
+import com.example.fooddeliveryandroid.presentation.order.orders.OrderScreen
 import com.example.fooddeliveryandroid.presentation.profile.ProfileScreen
 
 @Composable
@@ -28,14 +28,19 @@ fun MainScaffold(
     val mainNavController = rememberNavController()
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    val showBottomBar = currentRoute?.startsWith("order/") != true
+
     Scaffold(
         bottomBar = {
-            BottomBar(
-                currentRoute = currentRoute,
-                onRouteChange = { route ->
-                    mainNavController.navigate(route)
-                }
-            )
+            if (showBottomBar) {
+                BottomBar(
+                    currentRoute = currentRoute,
+                    onRouteChange = { route ->
+                        mainNavController.navigate(route)
+                    }
+                )
+            }
         }
     ) { innerPadding ->
         NavHost(
@@ -58,6 +63,7 @@ fun MainScaffold(
                 ProfileScreen(
                     onShowOrders = {
                         mainNavController.navigate(Screen.Orders.route)
+
                     }
                 )
             }

@@ -1,4 +1,4 @@
-package com.example.fooddeliveryandroid.presentation.orders
+package com.example.fooddeliveryandroid.presentation.order.orderDetails
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,29 +11,22 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class OrderViewModel @Inject constructor(
+class OrderDetailsViewModel @Inject constructor(
     private val orderRepository: OrderRepository,
-): ViewModel() {
-    private val _uiState = MutableStateFlow<OrderUIState>(OrderUIState.Loading)
+): ViewModel(){
+    private val _uiState = MutableStateFlow<OrderDetailsUIState>(OrderDetailsUIState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    init {
-        loadOrders()
-    }
-
-    private fun loadOrders() {
+    fun loadOrder(orderId: Long) {
         viewModelScope.launch {
-            when(val result = orderRepository.getOrders()) {
+            when(val orderResult = orderRepository.getOrderById(orderId)) {
                 is NetworkResult.Success -> {
-                    _uiState.value = OrderUIState.Success(orders = result.data)
+                    _uiState.value = OrderDetailsUIState.Success(orderResult.data)
                 }
                 is NetworkResult.Error -> {
-                    _uiState.value = OrderUIState.Error(message = result.exception.message ?: "Ошибка загрузки данных")
+                    _uiState.value = OrderDetailsUIState.Error("Не удалось загрузить заказ ${orderResult.exception.message}")
                 }
             }
         }
     }
-
-
-
 }
