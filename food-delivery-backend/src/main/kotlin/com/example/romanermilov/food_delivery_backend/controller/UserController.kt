@@ -38,10 +38,7 @@ class UserController(
     }
 
     @GetMapping("/me")
-        fun getCurrentUser(authentication: Authentication): UserResponse {
-        println("CONTROLLER AUTH: $authentication")
-        println("CONTROLLER PRINCIPAL: ${authentication.principal}")
-        println("CONTROLLER IS AUTHENTICATED: ${authentication.isAuthenticated}")
+        fun getCurrentUser(): UserResponse {
             return userService.getCurrentUser()
     }
 }

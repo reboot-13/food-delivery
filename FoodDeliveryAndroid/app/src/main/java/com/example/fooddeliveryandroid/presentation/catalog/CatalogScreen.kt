@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -93,15 +94,13 @@ fun CatalogScreen (
                     )
                 })
         },
-    ) {  paddingValues ->
+    ) {
         when(val state = uiState.value) {
             is CatalogUIState.Loading -> {
                 LoadingProcess()
             }
             is CatalogUIState.Success -> {
-
                 CatalogSuccess(
-
                     events = events,
                     categories = state.catalogData.categories,
                     products = state.catalogData.products,
@@ -317,7 +316,8 @@ fun ProductCard (
         onClick = { onProductClick(product.id) },
         modifier = Modifier
             .width(220.dp)
-            .height(260.dp),
+            .height(260.dp)
+            .clip(RoundedCornerShape(32.dp)),
 
     ) {
         Column(
@@ -371,7 +371,7 @@ fun CatalogQuantitySelector (
             .height(100.dp)
     ) {
         Text(
-            text = "$price ₽",
+            text = "${price.stripTrailingZeros()} ₽",
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.weight(1f)
         )
@@ -390,7 +390,10 @@ fun CatalogQuantitySelector (
         } else {
             QuantitySelector(
                 quantity = quantity,
-                onUpdateQuantity = onUpdateQuantity
+                onUpdateQuantity = onUpdateQuantity,
+                modifier = Modifier
+                    .height(36.dp)
+                    .width(100.dp)
             )
         }
     }

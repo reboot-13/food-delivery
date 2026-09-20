@@ -28,6 +28,7 @@ import kotlin.collections.component2
 class OrderService (
     private val orderRepository: OrderRepository,
     private val productRepository: ProductRepository,
+    private val cartItemService: CartItemService
 ) {
     private fun getUser(): UserEntity {
         val authentication = SecurityContextHolder.getContext().authentication
@@ -95,6 +96,7 @@ class OrderService (
         order.items = createOrderItems(request, order).toMutableList()
         order.totalPrice = calculateTotalPrice(order.items)
         orderRepository.save(order)
+        cartItemService.clearCart()
 
         return OrderMapper.orderToResponse(order)
     }

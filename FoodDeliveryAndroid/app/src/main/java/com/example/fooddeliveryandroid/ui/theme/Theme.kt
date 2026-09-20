@@ -1,7 +1,6 @@
 package com.example.fooddeliveryandroid.ui.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -23,7 +22,9 @@ private val AppColorScheme = lightColorScheme(
     onSurfaceVariant = Color(0xFF6E595A),
 
     surfaceContainerHigh = Color(0xFFF2E2E1),
-    surfaceContainerHighest = Color(0xFFFFFBFA)
+    surfaceContainerHighest = Color(0xFFFFFBFA),
+    error = Color(0xFFDB5856)
+
 )
 
 @Composable

@@ -27,7 +27,6 @@ class CartRepository @Inject constructor(
             }
 
     }
-
     suspend fun syncCart(): NetworkResult<Unit> {
         return safeApiCall {
             val cartItems = cartRemoteDataSource.getCartItems()

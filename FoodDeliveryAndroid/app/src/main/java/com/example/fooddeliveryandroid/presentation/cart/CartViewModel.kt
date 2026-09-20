@@ -5,11 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.fooddeliveryandroid.data.local.datastore.UserSession
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.repository.CartRepository
+import com.example.fooddeliveryandroid.data.repository.OrderRepository
 import com.example.fooddeliveryandroid.domain.model.CartItem
 import com.example.fooddeliveryandroid.domain.useCase.QuantityUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -23,10 +23,11 @@ import javax.inject.Inject
 @HiltViewModel
 class CartViewModel @Inject constructor (
     private val cartRepository: CartRepository,
+    private val orderRepository: OrderRepository,
     private val userSession: UserSession,
     private val quantityUpdater: QuantityUpdater
 ): ViewModel() {
-    private val _uiState = MutableStateFlow<CartUIState>(CartUIState.Loading)
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<CartUIState> =
         userSession.currentUser
@@ -46,6 +47,20 @@ class CartViewModel @Inject constructor (
             SharingStarted.WhileSubscribed(5_000),
             initialValue = CartUIState.Loading
         )
+    val createdOrderId: StateFlow<Long?> =
+        userSession.lastCreatedOrderId
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = null
+            )
+
+
+    fun clearCreatedOrder() {
+        viewModelScope.launch {
+            userSession.clearLastCreatedOrderId()
+        }
+    }
 
     init {
         viewModelScope.launch {
@@ -60,7 +75,7 @@ class CartViewModel @Inject constructor (
     private suspend fun loadCartItems(){
         val cartDataResult = cartRepository.syncCart()
         if (cartDataResult is NetworkResult.Error) {
-            TODO("обработать ошибку синхронизации")
+            TODO("обработать ошибку синхронизации, показать SnackBar")
         }
     }
 
@@ -73,4 +88,26 @@ class CartViewModel @Inject constructor (
         }
     }
 
+    fun createOrder(
+        cartItems: List<CartItem>
+    ) {
+        viewModelScope.launch {
+            when (val orderResult = orderRepository.createOrder(cartItems)) {
+                is NetworkResult.Success -> {
+                    clearLocalCart()
+
+                    userSession.saveLastCreatedOrderId(
+                        orderResult.data.id
+                    )
+                }
+                is NetworkResult.Error -> {
+
+                }
+            }
+        }
+    }
+
+    private suspend fun clearLocalCart() {
+        cartRepository.clearLocalCartItems()
+    }
 }

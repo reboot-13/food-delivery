@@ -3,7 +3,6 @@ package com.example.fooddeliveryandroid.data.local.datastore
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -15,39 +14,35 @@ import javax.inject.Singleton
 class SessionManager @Inject constructor(
     @param:ApplicationContext
     private val context: Context
-){
+) {
 
-    suspend fun saveToken(token: String){
+    suspend fun saveToken(token: String) {
         context.dataStore.edit { preferences ->
             preferences[TOKEN_KEY] = token
         }
     }
 
-    fun getToken(): Flow<String?>{
+    fun getToken(): Flow<String?> {
         return context.dataStore.data.map { preferences ->
             preferences[TOKEN_KEY]
         }
     }
 
-    suspend fun getTokenValue(): String?{
+    suspend fun getTokenValue(): String? {
         return context.dataStore.data.first()[TOKEN_KEY]
     }
 
-    suspend fun clearToken(){
+    suspend fun clearToken() {
         context.dataStore.edit { preferences ->
             preferences.remove(TOKEN_KEY)
         }
     }
 
-    suspend fun hasToken(): Boolean{
+    suspend fun hasToken(): Boolean {
         return getTokenValue() != null
     }
 
-    private companion object{
-        val Context.dataStore by preferencesDataStore(
-            name = "session"
-        )
-
-        val TOKEN_KEY = stringPreferencesKey(name = "jwt_token")
+    companion object {
+        val TOKEN_KEY = stringPreferencesKey("jwt_token")
     }
 }

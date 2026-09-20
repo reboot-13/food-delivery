@@ -44,6 +44,10 @@ class CartItemService (
         return CartItemMapper.toResponse(savedCartItem)
     }
 
+    fun clearCart() {
+        cartItemRepository.deleteAll()
+    }
+
     @Transactional
     fun updateQuantity(productId: Long, quantity: Short): CartItemResponse {
         val user = getUser()

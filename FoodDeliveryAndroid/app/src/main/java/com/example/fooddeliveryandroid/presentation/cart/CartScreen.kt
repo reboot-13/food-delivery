@@ -23,15 +23,20 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -42,16 +47,18 @@ import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 @Composable
 fun CartScreen (
     viewModel: CartViewModel = hiltViewModel(),
-    onGoToAuthScreen: () -> Unit
+    onGoToAuthScreen: () -> Unit,
+    onGoToCatalog: () -> Unit,
+    onShowOrder: (Long) -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+    val createdOrderId by viewModel.createdOrderId.collectAsStateWithLifecycle()
 
-    when (uiState.value) {
+    when (val result = uiState.value) {
+
         is CartUIState.Loading ->
             LoadingProcess()
 
-        is CartUIState.Error ->
-            Text((uiState.value as CartUIState.Error).message)
         is CartUIState.Unauthorized ->  {
             Box(modifier = Modifier
                 .fillMaxSize(),
@@ -64,55 +71,146 @@ fun CartScreen (
                         Text("Войти")
                     }
                 }
-
-
             }
         }
-        is CartUIState.Success ->
-            LazyColumn() {
-                items(
-                    items = (uiState.value as CartUIState.Success).cartItems,
-                    key = { it.product.id }
-                    ) { cartItem ->
-                    CartItemCard(
-                        cartItem = cartItem,
-                        onUpdateQuantity = { quantity ->
-                            viewModel.updateCartItemQuantity(
-                                productId = cartItem.product.id,
-                                quantity = quantity
-                            )
-                        }
-                    )
+        is CartUIState.Success -> {
+
+            LaunchedEffect(result.cartItems.isNotEmpty()) {
+                if (result.cartItems.isNotEmpty() && createdOrderId != null) {
+                    viewModel.clearCreatedOrder()
                 }
             }
-    }
 
+            if (result.cartItems.isEmpty() && createdOrderId != null) {
+                OrderCreatedContent(
+                    orderId = createdOrderId!!,
+                    onNavigateToCatalog = {
+                        onGoToCatalog()
+                    }
+                )
+            } else if (result.cartItems.isNotEmpty()) {
+                CartSuccess(
+                    cartItems = result.cartItems,
+                    onUpdateQuantity = { id, quantity ->
+                        viewModel.updateCartItemQuantity(
+                            productId = id,
+                            quantity = quantity
+                        )
+                    },
+                    onCreateOrder = {cartItems ->
+                        viewModel.createOrder(cartItems)
+                    }
+                )
+            } else {
+                EmptyCartScreen(onGoToCatalog = onGoToCatalog)
+            }
+        }
+    }
+}
+
+@Composable
+fun EmptyCartScreen(
+    onGoToCatalog: () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Корзина пуста :(",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+            Button(
+                onClick = onGoToCatalog
+            ) {
+                Text("Перейти в каталог")
+            }
+        }
+    }
+}
+
+@Composable
+fun CartSuccess(
+    cartItems: List<CartItem>,
+    onUpdateQuantity: (Long, Int) -> Unit,
+    onCreateOrder: (List<CartItem>) -> Unit,
+) {
+
+    LazyColumn(
+        modifier = Modifier
+            .padding(horizontal = 12.dp)
+            .fillMaxWidth()
+    ) {
+        items(
+            items = cartItems,
+            key = { it.product.id }
+        ) { cartItem ->
+            CartItemCard(
+                cartItem = cartItem,
+                onUpdateQuantity = onUpdateQuantity
+            )
+        }
+        item {
+            Button(
+                onClick = {
+                    onCreateOrder(cartItems)
+                }
+            ) {
+                Text("Оформить заказ")
+            }
+        }
+    }
 }
 
 @Composable
 fun CartItemCard(
     cartItem: CartItem,
-    onUpdateQuantity: (Int) -> Unit
+    onUpdateQuantity: (Long, Int) -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(vertical = 6.dp)
+            .height(100.dp)
+            .clip(RoundedCornerShape(32.dp))
 
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            ProductImage(
-                imageUrl = cartItem.product.imageUrl,
-                imageDescription = cartItem.product.name,
-                modifier = Modifier
-                    .size(80.dp)
-            )
-            Text(cartItem.product.name)
+            Row(modifier = Modifier.weight(1f)) {
+                ProductImage(
+                    imageUrl = cartItem.product.imageUrl,
+                    imageDescription = cartItem.product.name,
+                    modifier = Modifier
+                        .size(80.dp)
+                )
+                Column() {
+                    Text(
+                        text = cartItem.product.name,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "${cartItem.product.price.stripTrailingZeros()} ₽",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+
+            }
+
             QuantitySelector(
                 quantity = cartItem.quantity,
-                onUpdateQuantity = onUpdateQuantity)
+                onUpdateQuantity = { quantity ->
+                    onUpdateQuantity(cartItem.product.id, quantity)
+                },
+                modifier = Modifier
+                    .height(36.dp)
+                    .width(120.dp)
+            )
         }
     }
 
@@ -138,13 +236,14 @@ fun ProductImage(
 @Composable
 fun QuantitySelector(
     quantity: Int,
-    onUpdateQuantity: (Int) -> Unit
+    onUpdateQuantity: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
-        modifier = Modifier
+        modifier = modifier
             .height(36.dp)
             .width(100.dp)
             .clip(shape = RoundedCornerShape(32.dp))
@@ -184,4 +283,34 @@ fun QuantitySelector(
             )
         }
     }
+}
+
+
+@Composable
+fun OrderCreatedContent(
+    orderId: Long,
+    onNavigateToCatalog: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.align(Alignment.Center)
+        ) {
+            Text(
+                text = "Заказ создан!",
+                style = MaterialTheme.typography.labelLarge,
+                fontSize = 24.sp
+            )
+            Button(
+                onClick = onNavigateToCatalog,
+                modifier = Modifier.fillMaxWidth(0.5f).height(40.dp)
+            ) {
+                Text(
+                    text = "Оформить ещё один",
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+
 }

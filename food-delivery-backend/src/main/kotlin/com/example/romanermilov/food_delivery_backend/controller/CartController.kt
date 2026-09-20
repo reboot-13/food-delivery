@@ -40,5 +40,4 @@ class CartController (
     fun deleteCartItem(@PathVariable("productId") productId : Long) {
         cartItemService.deleteItem(productId)
     }
-
 }

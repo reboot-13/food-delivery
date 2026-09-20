@@ -6,8 +6,6 @@ sealed class CartUIState {
 
     data class Success(val cartItems: List<CartItem>): CartUIState()
 
-    data class Error(val message: String): CartUIState()
-
     data object Loading: CartUIState()
 
     data object Unauthorized: CartUIState()

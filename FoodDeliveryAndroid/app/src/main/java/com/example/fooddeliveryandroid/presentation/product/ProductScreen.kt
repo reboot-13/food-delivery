@@ -137,7 +137,7 @@ fun ProductDetailsQuantitySelector (
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "$price ₽" ,
+            text = "${price.stripTrailingZeros()} ₽" ,
             fontWeight = FontWeight.ExtraBold,
             fontSize = 24.sp,
             modifier = Modifier.weight(0.7f)

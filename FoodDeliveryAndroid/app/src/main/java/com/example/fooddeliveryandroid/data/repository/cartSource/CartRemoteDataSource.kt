@@ -9,7 +9,6 @@ import javax.inject.Inject
 class CartRemoteDataSource @Inject constructor(
     private val cartApi: CartApi
 ) {
-
     suspend fun getCartItems(): List<CartItemResponse> {
         return cartApi.getCartItems()
     }
