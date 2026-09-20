@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.ArrowBackIosNew
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -73,7 +74,7 @@ fun TopBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp)
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
 
         ) {
         IconButton(
@@ -87,16 +88,16 @@ fun TopBar(
                 .size(36.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.Outlined.ArrowBackIosNew,
                 contentDescription = "Назад",
                 tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(16.dp)
             )
         }
         Text(
             text = "Заказ принят",
             style = MaterialTheme.typography.labelLarge,
-            fontSize = 24.sp,
+            fontSize = 20.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.Center)
         )

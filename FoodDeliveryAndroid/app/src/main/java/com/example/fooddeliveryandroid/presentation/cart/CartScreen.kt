@@ -350,8 +350,8 @@ fun OrderCreatedContent(
                     onShowOrder(order.id)
                 },
                 interactionSource = interactionSource,
-                shadowElevation = 2.dp,
-                shape = RoundedCornerShape(32.dp),
+                shadowElevation = 1.dp,
+                shape = RoundedCornerShape(40.dp),
                 color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier
                     .fillMaxWidth()
