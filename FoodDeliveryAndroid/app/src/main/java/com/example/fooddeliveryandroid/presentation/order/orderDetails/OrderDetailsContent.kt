@@ -32,7 +32,7 @@ import com.example.fooddeliveryandroid.domain.model.Order
 import com.example.fooddeliveryandroid.domain.model.OrderItem
 import com.example.fooddeliveryandroid.domain.model.enums.OrderStatus
 import com.example.fooddeliveryandroid.presentation.cart.ProductImage
-import com.example.fooddeliveryandroid.presentation.order.OrderStatusBlockActive
+import com.example.fooddeliveryandroid.presentation.order.OrderStatusBar
 import java.math.BigDecimal
 
 @Composable
@@ -47,7 +47,7 @@ fun OrderDetailsContent(
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
 
-        StatusBlock(
+        OrderStatusBlock(
             activeStatus = order.status
         )
 
@@ -100,7 +100,7 @@ fun TotalPriceBlock(totalPrice: BigDecimal) {
 }
 
 @Composable
-fun StatusBlock(
+fun OrderStatusBlock(
     activeStatus: OrderStatus) {
     Row(
         modifier = Modifier
@@ -110,7 +110,7 @@ fun StatusBlock(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (activeStatus != OrderStatus.CANCELLED) {
-            OrderStatusBlockActive(activeStatus)
+            OrderStatusBar(activeStatus)
         } else {
             OrderStatusBlockCancelled()
         }

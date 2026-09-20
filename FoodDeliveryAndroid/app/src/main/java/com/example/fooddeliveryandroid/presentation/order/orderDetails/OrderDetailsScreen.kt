@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowBackIosNew
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,39 +34,29 @@ fun OrderDetailsScreen (
     onGoBack: () -> Unit,
     viewModel: OrderDetailsViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val order by viewModel.order.collectAsStateWithLifecycle()
 
     LaunchedEffect(orderId) {
-        viewModel.loadOrder(orderId)
+        viewModel.setOrderId(orderId)
     }
-
-    when (val state = uiState) {
-        is OrderDetailsUIState.Loading -> {
-            LoadingProcess()
+    order?.let { order ->
+        Column(modifier = Modifier.fillMaxSize()) {
+            TopBar(
+                orderId = order.id,
+                onGoBack = {
+                    onGoBack()
+                }
+            )
+            OrderDetailsContent(
+                order = order
+            )
         }
-
-        is OrderDetailsUIState.Success -> {
-            Column(modifier = Modifier.fillMaxSize()) {
-                TopBar(
-                    onGoBack = {
-                        onGoBack()
-                    }
-                )
-                OrderDetailsContent(
-                    order = state.order
-                )
-            }
-
-        }
-
-        is OrderDetailsUIState.Error -> {
-            Text(state.message)
-        }
-    }
+    } ?: LoadingProcess()
 }
-
 @Composable
 fun TopBar(
+    orderId: Long,
     onGoBack: () -> Unit
 ) {
     Box(
@@ -95,9 +84,9 @@ fun TopBar(
             )
         }
         Text(
-            text = "Заказ принят",
-            style = MaterialTheme.typography.labelLarge,
-            fontSize = 20.sp,
+            text = "Заказ $orderId",
+            style = MaterialTheme.typography.bodyLarge,
+            fontSize = 18.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.Center)
         )

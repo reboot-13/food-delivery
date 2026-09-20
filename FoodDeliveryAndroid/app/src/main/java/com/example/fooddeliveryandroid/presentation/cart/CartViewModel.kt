@@ -7,6 +7,7 @@ import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.repository.CartRepository
 import com.example.fooddeliveryandroid.data.repository.OrderRepository
 import com.example.fooddeliveryandroid.domain.model.CartItem
+import com.example.fooddeliveryandroid.domain.model.Order
 import com.example.fooddeliveryandroid.domain.useCase.QuantityUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,7 +17,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -56,17 +56,13 @@ class CartViewModel @Inject constructor (
                 initialValue = null
             )
 
-    val currentOrder = userSession
+    val currentOrder: StateFlow<Order?> = userSession
         .lastCreatedOrderId
-        .mapLatest { orderId ->
+        .flatMapLatest { orderId ->
             if (orderId == null) {
-                null
+                flowOf(null)
             } else {
-                when (val orderResult = orderRepository.getOrderById(orderId)){
-                    is NetworkResult.Error -> null
-
-                    is NetworkResult.Success -> orderResult.data
-                }
+                orderRepository.observeOrder(orderId)
             }
         }
         .stateIn(

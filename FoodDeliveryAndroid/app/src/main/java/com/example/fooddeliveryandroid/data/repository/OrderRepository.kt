@@ -7,6 +7,12 @@ import com.example.fooddeliveryandroid.data.remote.network.safeApiCall
 import com.example.fooddeliveryandroid.domain.mapper.OrderMapper
 import com.example.fooddeliveryandroid.domain.model.CartItem
 import com.example.fooddeliveryandroid.domain.model.Order
+import com.example.fooddeliveryandroid.domain.model.enums.OrderStatus
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import javax.inject.Inject
 
 class OrderRepository @Inject constructor(
@@ -21,10 +27,31 @@ class OrderRepository @Inject constructor(
     }
 
 
-    suspend fun getOrderById(id: Long): NetworkResult<Order> {
+    private suspend fun getOrderById(id: Long): NetworkResult<Order> {
         return safeApiCall {
             val response = orderApi.getOrderById(id)
             OrderMapper.responseToModel(response)
+        }
+    }
+
+    fun observeOrder(orderId: Long): Flow<Order> {
+        return flow {
+            while (currentCoroutineContext().isActive) {
+                when (val result = getOrderById(orderId)) {
+                    is NetworkResult.Error -> return@flow
+                    is NetworkResult.Success -> {
+                        val order = result.data
+                        emit(order)
+                        if (
+                            order.status == OrderStatus.COMPLETED ||
+                            order.status == OrderStatus.CANCELLED
+                        ) {
+                            return@flow
+                        }
+                    }
+                }
+                delay(5_000)
+            }
         }
     }
 

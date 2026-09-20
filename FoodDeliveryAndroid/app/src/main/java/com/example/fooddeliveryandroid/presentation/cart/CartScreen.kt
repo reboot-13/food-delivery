@@ -49,7 +49,7 @@ import coil3.compose.AsyncImage
 import com.example.fooddeliveryandroid.R
 import com.example.fooddeliveryandroid.domain.model.CartItem
 import com.example.fooddeliveryandroid.domain.model.Order
-import com.example.fooddeliveryandroid.presentation.order.OrderStatusBlockActive
+import com.example.fooddeliveryandroid.presentation.order.OrderStatusBar
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 
 @Composable
@@ -362,7 +362,7 @@ fun OrderCreatedContent(
                     }
                     .padding(bottom = 12.dp)
             ) {
-                OrderStatusBlockActive(
+                OrderStatusBar(
                     activeStatus = order.status,
                     withRightArrow = true
                 )
