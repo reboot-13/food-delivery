@@ -8,5 +8,6 @@ data class  UserResponse (
     val name: String,
     val phoneNumber: String,
     val role: UserRole,
-    val createdAt: LocalDateTime
+    val createdAt: LocalDateTime,
+    val addresses: List<AddressResponse>
 )

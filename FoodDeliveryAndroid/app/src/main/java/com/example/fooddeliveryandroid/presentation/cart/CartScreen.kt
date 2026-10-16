@@ -2,7 +2,10 @@ package com.example.fooddeliveryandroid.presentation.cart
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -19,18 +22,27 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RippleDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +52,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,7 +62,11 @@ import coil3.compose.AsyncImage
 import com.example.fooddeliveryandroid.R
 import com.example.fooddeliveryandroid.domain.model.CartItem
 import com.example.fooddeliveryandroid.domain.model.Order
+import com.example.fooddeliveryandroid.domain.model.OrderItem
+import com.example.fooddeliveryandroid.domain.model.enums.OrderStatus
 import com.example.fooddeliveryandroid.presentation.order.OrderStatusBar
+import com.example.fooddeliveryandroid.presentation.product.ProductModalBottomSheet
+import com.example.fooddeliveryandroid.presentation.product.ProductScreen
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 
 @Composable
@@ -98,10 +115,13 @@ fun CartScreen (
                     },
                     onShowOrder = {orderId ->
                         onShowOrder(orderId)
+                    },
+                    onRepeatOrder = { orderItems ->
+                        TODO("Реализовать repeatOrder, скорее всего сделать UseCase - для Cart и OrderDetails VM")
                     }
                 )
             } else if (result.cartItems.isNotEmpty()) {
-                CartSuccess(
+                ShoppingCart(
                     cartItems = result.cartItems,
                     onUpdateQuantity = { id, quantity ->
                         viewModel.updateCartItemQuantity(
@@ -110,7 +130,9 @@ fun CartScreen (
                         )
                     },
                     onCreateOrder = {cartItems ->
-                        viewModel.createOrder(cartItems)
+                        viewModel.createOrder(
+                            cartItems
+                        )
                     }
                 )
             } else {
@@ -144,74 +166,131 @@ fun EmptyCartScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartSuccess(
+fun ShoppingCart(
     cartItems: List<CartItem>,
     onUpdateQuantity: (Long, Int) -> Unit,
     onCreateOrder: (List<CartItem>) -> Unit,
 ) {
+    var selectedProductId by rememberSaveable() {
+        mutableStateOf<Long?>(null)
+    }
 
-    LazyColumn(
-        modifier = Modifier
-            .padding(horizontal = 12.dp)
-            .fillMaxWidth()
-    ) {
-        items(
-            items = cartItems,
-            key = { it.product.id }
-        ) { cartItem ->
-            CartItemCard(
-                cartItem = cartItem,
-                onUpdateQuantity = onUpdateQuantity
-            )
+    ProductModalBottomSheet(
+        selectedProductId = selectedProductId,
+        onDismissRequest = {
+            selectedProductId = null
         }
-        item {
-            Button(
-                onClick = {
-                    onCreateOrder(cartItems)
-                }
+    )
+
+    val totalPrice =
+        cartItems.map { cartItem ->
+            cartItem.product.price.toInt() * cartItem.quantity
+        }.sumOf { it }
+    Column(
+        modifier = Modifier
+        .fillMaxSize()
+        .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            shape = RoundedCornerShape(32.dp),
+            color = Color.White,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth(),
             ) {
-                Text("Оформить заказ")
+                items(
+                    items = cartItems,
+                    key = { it.product.id }
+                ) { cartItem ->
+                    CartItemCard(
+                        cartItem = cartItem,
+                        onUpdateQuantity = onUpdateQuantity,
+                        onShowProduct = { productId ->
+                            selectedProductId = productId
+                        }
+                    )
+                }
             }
         }
+
+        Text(
+            text = "Итого",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Light,
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = "$totalPrice ₽",
+            style = MaterialTheme.typography.bodyLarge,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center
+        )
+
+        Button(
+            onClick = {
+                onCreateOrder(cartItems)
+            }
+        ) {
+            Text("Оформить заказ")
+        }
+
     }
 }
 
 @Composable
 fun CartItemCard(
     cartItem: CartItem,
-    onUpdateQuantity: (Long, Int) -> Unit
+    onUpdateQuantity: (Long, Int) -> Unit,
+    onShowProduct: (Long) -> Unit
 ) {
-    Card(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .height(100.dp)
-            .clip(RoundedCornerShape(32.dp))
-
+            .height(130.dp)
+            .padding(16.dp)
+            .clickable(
+                onClick = {
+                    onShowProduct(cartItem.product.id)
+                },
+                interactionSource = null,
+                indication = null
+            ),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        ProductImage(
+            imageUrl = cartItem.product.imageUrl,
+            imageDescription = cartItem.product.name,
+            modifier = Modifier
+                .size(80.dp)
+        )
+        Column(
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(start = 12.dp)
+                .padding(vertical = 12.dp)
+                .weight(1f)
         ) {
-            Row(modifier = Modifier.weight(1f)) {
-                ProductImage(
-                    imageUrl = cartItem.product.imageUrl,
-                    imageDescription = cartItem.product.name,
-                    modifier = Modifier
-                        .size(80.dp)
+            Text(
+                text = cartItem.product.name,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(0.2f)
+            )
+
+            if (cartItem.product.weight != null) {
+                Text(
+                    text = "${cartItem.product.weight} г",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontSize = 10.sp,
+                    modifier = Modifier.weight(0.2f)
                 )
-                Column() {
-                    Text(
-                        text = cartItem.product.name,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = "${cartItem.product.price.stripTrailingZeros()} ₽",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
-
             }
 
             QuantitySelector(
@@ -220,10 +299,18 @@ fun CartItemCard(
                     onUpdateQuantity(cartItem.product.id, quantity)
                 },
                 modifier = Modifier
-                    .height(36.dp)
-                    .width(120.dp)
+                    .height(32.dp)
+                    .width(100.dp)
+                    .weight(0.6f),
+                bgColor = MaterialTheme.colorScheme.background,
+                contentColor = Color.DarkGray
             )
         }
+        Text(
+            text = "${cartItem.product.price.toInt() * cartItem.quantity} ₽",
+            style = MaterialTheme.typography.bodyLarge,
+            fontSize = 16.sp
+        )
     }
 
 }
@@ -249,50 +336,57 @@ fun ProductImage(
 fun QuantitySelector(
     quantity: Int,
     onUpdateQuantity: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    bgColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = modifier
-            .height(36.dp)
-            .width(100.dp)
-            .clip(shape = RoundedCornerShape(32.dp))
-            .background(MaterialTheme.colorScheme.primary)
+    Surface(
+        shape = RoundedCornerShape(32.dp),
+        color = bgColor,
+        contentColor = contentColor,
+        tonalElevation = 8.dp
     ) {
-        IconButton(
-            onClick = {
-                onUpdateQuantity(quantity - 1)
-            },
-            interactionSource =  interactionSource,
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
-        ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = modifier
 
-            Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.outline_remove_24),
-                contentDescription = "Уменьшить количество"
-            )
-        }
-        Text(
-            text = quantity.toString(),
-            color = MaterialTheme.colorScheme.onPrimary
-        )
 
-        IconButton(
-            onClick = {
-                onUpdateQuantity(quantity + 1)
-            },
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
         ) {
-            Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.outline_add_24),
-                contentDescription = "Увеличить количество"
+            IconButton(
+                onClick = {
+                    onUpdateQuantity(quantity - 1)
+                },
+                interactionSource =  interactionSource,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = contentColor
+                )
+            ) {
+
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.outline_remove_24),
+                    contentDescription = "Уменьшить количество"
+                )
+            }
+            Text(
+                text = quantity.toString(),
+                color = contentColor
             )
+
+            IconButton(
+                onClick = {
+                    onUpdateQuantity(quantity + 1)
+                },
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = contentColor
+                )
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.outline_add_24),
+                    contentDescription = "Увеличить количество"
+                )
+            }
         }
     }
 }
@@ -302,49 +396,64 @@ fun QuantitySelector(
 fun OrderCreatedContent(
     order: Order?,
     onNavigateToCatalog: () -> Unit,
-    onShowOrder: (Long) -> Unit) {
+    onShowOrder: (Long) -> Unit,
+    onRepeatOrder: (List<OrderItem>) -> Unit){
 
-    val interactionSource = remember {
-        MutableInteractionSource()
-    }
+    if (order != null) {
+        val interactionSource = remember {
+            MutableInteractionSource()
+        }
 
-    val isPressed by interactionSource.collectIsPressedAsState()
+        val isPressed by interactionSource.collectIsPressedAsState()
 
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) {
-            0.97f
-        } else {
-            1f
-        },
-        animationSpec = tween(120),
-        label = "status_block_scale"
-    )
+        val scale by animateFloatAsState(
+            targetValue = if (isPressed) {
+                0.97f
+            } else {
+                1f
+            },
+            animationSpec = tween(120),
+            label = "status_block_scale"
+        )
 
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .fillMaxHeight(0.85f)
-        .padding(horizontal = 16.dp)) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.align(Alignment.Center)
-        ) {
-            Text(
-                text = "Заказ создан!",
-                style = MaterialTheme.typography.labelLarge,
-                fontSize = 24.sp
-            )
-            Button(
-                onClick = onNavigateToCatalog,
-                modifier = Modifier.fillMaxWidth(0.5f).height(40.dp)
+        val buttonText =
+            if (order.status == OrderStatus.CANCELLED)
+                "Повторить заказ"
+            else
+                "Оформить ещё один"
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.85f)
+            .padding(horizontal = 16.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.align(Alignment.Center)
             ) {
                 Text(
-                    text = "Оформить ещё один",
-                    textAlign = TextAlign.Center
+                    text = order.status.specification,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontSize = 24.sp
                 )
+
+                Button(
+                    onClick = {
+                            if (order.status == OrderStatus.CANCELLED)
+                                onRepeatOrder(order.items)
+                            else
+                                onNavigateToCatalog()
+                        },
+                    modifier = Modifier.fillMaxWidth(0.5f).height(40.dp)
+                ) {
+
+                    Text(
+                        text = buttonText,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
-        }
-        if (order != null) {
+
             Surface(
                 onClick = {
                     onShowOrder(order.id)

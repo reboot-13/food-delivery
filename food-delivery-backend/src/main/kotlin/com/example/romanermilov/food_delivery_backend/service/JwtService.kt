@@ -2,6 +2,7 @@ package com.example.romanermilov.food_delivery_backend.service
 
 import com.example.romanermilov.food_delivery_backend.entity.UserEntity
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
@@ -27,7 +28,7 @@ class JwtService {
         val now = Date()
         val expirationDate = Date(now.time + expiration)
         return Jwts.builder()
-            .subject(user.phoneNumber)
+            .subject(user.id!!.toString())
             .claim("role", user.role.name)
             .issuedAt(now)
             .expiration(expirationDate)
@@ -35,8 +36,10 @@ class JwtService {
             .compact()
     }
 
-    fun extractPhoneNumber(token: String): String {
-        return extractAllClaims(token).subject
+    fun extractUserId(token: String): Long {
+        val subject = extractAllClaims(token).subject
+        return subject.toLongOrNull()
+            ?: throw JwtException("Invalid user ID in token")
     }
 
     fun extractAllClaims(token: String): Claims {

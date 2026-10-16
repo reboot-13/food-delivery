@@ -2,6 +2,7 @@ package com.example.romanermilov.food_delivery_backend.controller
 
 import com.example.romanermilov.food_delivery_backend.dto.request.AuthRequest
 import com.example.romanermilov.food_delivery_backend.dto.request.RegisterRequest
+import com.example.romanermilov.food_delivery_backend.dto.request.UpdateUserRequest
 import com.example.romanermilov.food_delivery_backend.dto.response.AuthResponse
 import com.example.romanermilov.food_delivery_backend.dto.response.UserResponse
 import com.example.romanermilov.food_delivery_backend.service.UserService
@@ -9,6 +10,7 @@ import jakarta.validation.Valid
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -39,6 +41,13 @@ class UserController(
 
     @GetMapping("/me")
         fun getCurrentUser(): UserResponse {
-            return userService.getCurrentUser()
+            return userService.getUser()
+    }
+
+    @PutMapping("/me")
+    fun updateCurrentUser(
+        @Valid @RequestBody request: UpdateUserRequest
+    ): UserResponse {
+        return userService.updateCurrentUser(request)
     }
 }

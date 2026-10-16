@@ -1,6 +1,6 @@
 package com.example.fooddeliveryandroid.data.repository.productSource
 
-import com.example.fooddeliveryandroid.data.remote.dto.ProductResponse
+import com.example.fooddeliveryandroid.data.remote.dto.response.ProductResponse
 import com.example.fooddeliveryandroid.data.remote.network.api.ProductApi
 import javax.inject.Inject
 

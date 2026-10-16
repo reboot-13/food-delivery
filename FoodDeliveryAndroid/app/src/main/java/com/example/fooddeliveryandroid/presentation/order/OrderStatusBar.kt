@@ -271,10 +271,7 @@ private fun RowScope.OrderStatusConnector(
 
     HorizontalDivider(
         modifier = Modifier
-            .weight(1f)
-            .padding(
-                top = 24.dp,
-            ),
+            .weight(1f),
         thickness = 2.dp,
         color = lineColor
     )

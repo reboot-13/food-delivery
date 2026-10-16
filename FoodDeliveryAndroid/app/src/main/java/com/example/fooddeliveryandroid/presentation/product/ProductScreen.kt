@@ -1,5 +1,6 @@
 package com.example.fooddeliveryandroid.presentation.product
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,9 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +41,8 @@ fun ProductScreen(
         viewModel.loadProduct(productId)
     }
     val product by viewModel.product.collectAsStateWithLifecycle()
+
+
     product?.let {
         ProductContent(
             product = it.product,
@@ -154,7 +159,11 @@ fun ProductDetailsQuantitySelector (
             } else {
                 QuantitySelector(
                     quantity = quantity,
-                    onUpdateQuantity = onUpdateQuantity
+                    onUpdateQuantity = onUpdateQuantity,
+                    modifier = Modifier
+                        .height(36.dp)
+                        .width(100.dp)
+                        .background(MaterialTheme.colorScheme.primary)
                 )
             }
         }

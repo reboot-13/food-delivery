@@ -72,7 +72,7 @@ val AppTypography = Typography(
 
     bodyLarge = TextStyle(
         fontFamily = RobotoMono,
-        fontWeight = FontWeight.Normal
+        fontWeight = FontWeight.Bold
     ),
 
     bodyMedium = TextStyle(
@@ -83,7 +83,7 @@ val AppTypography = Typography(
     // Мелкий второстепенный текст
     bodySmall = TextStyle(
         fontFamily = RobotoMono,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Light,
         fontSize = 14.sp
     ),
 

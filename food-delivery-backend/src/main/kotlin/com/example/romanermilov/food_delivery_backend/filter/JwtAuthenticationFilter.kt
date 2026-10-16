@@ -7,6 +7,7 @@ import io.jsonwebtoken.JwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.apache.coyote.BadRequestException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
@@ -38,17 +39,22 @@ class JwtAuthenticationFilter(
             if (authHeader != null && authHeader.startsWith("Bearer ")){
                 val receivedToken = authHeader.substring(7)
                 try {
-                    val phoneNumber = jwtService.extractPhoneNumber(receivedToken)
-                    val user = userService.findByPhoneNumber(phoneNumber)
+                    val userId = jwtService.extractUserId(receivedToken)
 
-                    val authentication = UsernamePasswordAuthenticationToken(
-                        user,
-                        null,
-                        emptyList()
-                    )
-                    SecurityContextHolder
-                        .getContext()
-                        .authentication = authentication
+                    val user = userService.findByUserId(userId)
+                        .orElse(null)
+
+                    if (user != null) {
+                        val authentication = UsernamePasswordAuthenticationToken(
+                            user,
+                            null,
+                            emptyList()
+                        )
+                        SecurityContextHolder
+                            .getContext()
+                            .authentication = authentication
+                    }
+
                 } catch (e: ExpiredJwtException) {
                     response.sendError(
                         HttpServletResponse.SC_UNAUTHORIZED,
@@ -61,10 +67,14 @@ class JwtAuthenticationFilter(
                         "Invalid JWT"
                     )
                     return
+                } catch (e: BadRequestException) {
+                    response.sendError(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "Bad request"
+                    )
                 }
-
-                filterChain.doFilter(request, response)
             }
         }
+        filterChain.doFilter(request, response)
     }
 }

@@ -9,14 +9,19 @@ import com.example.fooddeliveryandroid.data.repository.ProfileRepository
 import com.example.fooddeliveryandroid.data.local.datastore.SessionManager
 import com.example.fooddeliveryandroid.data.local.datastore.UserSession
 import com.example.fooddeliveryandroid.data.repository.CartRepository
+import com.example.fooddeliveryandroid.data.repository.CheckoutPreferencesRepository
+import com.example.fooddeliveryandroid.domain.model.Address
 import com.example.fooddeliveryandroid.domain.validation.AuthValidator
 import com.example.fooddeliveryandroid.domain.validation.ValidationResult
 import com.example.fooddeliveryandroid.presentation.profile.formState.AuthFormState
 import com.example.fooddeliveryandroid.presentation.profile.formState.RegisterFormState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,10 +31,25 @@ class ProfileViewModel @Inject constructor (
     private val profileRepository: ProfileRepository,
     private val cartRepository: CartRepository,
     private val sessionManager: SessionManager,
+    private val checkoutPreferencesRepository: CheckoutPreferencesRepository,
     private val userSession: UserSession
 ): ViewModel(){
     private val _uiState = MutableStateFlow<ProfileUIState>(ProfileUIState.Loading)
     val uiState = _uiState.asStateFlow()
+
+    val selectedAddress: StateFlow<Address?> =
+        combine(
+            userSession.currentUser,
+            checkoutPreferencesRepository.selectedAddressId
+        ) { user, selectedAddressId ->
+            user?.addresses?.firstOrNull { address ->
+                address.id == selectedAddressId
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null
+        )
 
     private val _validationState =
         MutableStateFlow(ProfileValidationState())
@@ -87,6 +107,7 @@ class ProfileViewModel @Inject constructor (
             cartRepository.clearLocalCartItems()
             userSession.clear()
             clearErrorFields()
+            checkoutPreferencesRepository.clear()
         }
     }
 

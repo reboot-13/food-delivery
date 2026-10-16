@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,6 +47,8 @@ import androidx.compose.ui.draw.scale
                 contentDescription = bottomDestination.title,
                 modifier = Modifier.scale(scale)
             )
-            Text(bottomDestination.title)
+            Text(
+                text = bottomDestination.title,
+                style = MaterialTheme.typography.bodyMedium)
         }
     }

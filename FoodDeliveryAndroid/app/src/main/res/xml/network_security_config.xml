@@ -12,6 +12,10 @@
             172.20.10.2
         </domain>
 
+        <domain includeSubdomains="true">
+            192.168.1.67
+        </domain>
+
     </domain-config>
 
 </network-security-config>

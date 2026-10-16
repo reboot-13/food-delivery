@@ -22,7 +22,7 @@ class UserEntity (
     @Column(name = "phone_number", nullable = false, unique = true)
     var phoneNumber: String = "",
     @Column(name = "password_hash", unique = true, nullable = false)
-    var password: String = "",
+    var password: String,
     @Column(name = "created_at", nullable = false)
     var createdAt: LocalDateTime = LocalDateTime.now(),
     @Enumerated(EnumType.STRING)

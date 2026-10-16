@@ -33,7 +33,4 @@ class OrderViewModel @Inject constructor(
             }
         }
     }
-
-
-
 }

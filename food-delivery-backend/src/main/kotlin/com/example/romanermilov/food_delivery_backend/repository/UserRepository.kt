@@ -7,4 +7,9 @@ import java.util.Optional
 interface UserRepository : JpaRepository<UserEntity, Long>{
     fun findByPhoneNumber(phoneNumber: String): Optional<UserEntity>
     fun existsByPhoneNumber(phoneNumber: String): Boolean
+    fun existsByPhoneNumberAndIdNot(
+        phoneNumber: String,
+        id: Long
+    ): Boolean
+
 }

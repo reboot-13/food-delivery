@@ -72,6 +72,20 @@ class GlobalExceptionHandler {
             .body(response)
     }
 
+    @ExceptionHandler(PhoneNumberAlreadyExistsException::class)
+    fun handlePhoneNumberAlreadyExistsException(exception: PhoneNumberAlreadyExistsException) : ResponseEntity<ErrorResponse> {
+        val status = HttpStatus.CONFLICT
+        val response = ErrorResponse(
+            status = status.value(),
+            error = "Phone number already exists",
+            message = exception.message!!,
+            timestamp = LocalDateTime.now().toString()
+        )
+        return ResponseEntity
+            .status(status)
+            .body(response)
+    }
+
     @ExceptionHandler(NotEnoughAccessRights::class)
     fun handleNotEnoughAccessRights(exception: NotEnoughAccessRights): ResponseEntity<ErrorResponse> {
         val status = HttpStatus.FORBIDDEN
@@ -120,6 +134,48 @@ class GlobalExceptionHandler {
         val exceptionResponse = ErrorResponse(
             status = status.value(),
             error = "CartItem already exists",
+            message = exception.message!!,
+            timestamp = LocalDateTime.now().toString()
+        )
+        return ResponseEntity
+            .status(status)
+            .body(exceptionResponse)
+    }
+
+    @ExceptionHandler (AddressNotFoundException::class)
+    fun handleAddressNotFoundException(exception: AddressNotFoundException): ResponseEntity<ErrorResponse> {
+        val status = HttpStatus.NOT_FOUND
+        val exceptionResponse = ErrorResponse(
+            status = status.value(),
+            error = "Address not found",
+            message = exception.message!!,
+            timestamp = LocalDateTime.now().toString()
+        )
+        return ResponseEntity
+            .status(status)
+            .body(exceptionResponse)
+    }
+
+    @ExceptionHandler (PickupPointNotFoundException::class)
+    fun handlePickupPointNotFoundException(exception: PickupPointNotFoundException): ResponseEntity<ErrorResponse> {
+        val status = HttpStatus.NOT_FOUND
+        val exceptionResponse = ErrorResponse(
+            status = status.value(),
+            error = "Pickup point not found",
+            message = exception.message!!,
+            timestamp = LocalDateTime.now().toString()
+        )
+        return ResponseEntity
+            .status(status)
+            .body(exceptionResponse)
+    }
+
+    @ExceptionHandler (InvalidOrderDestinationException::class)
+    fun handleInvalidOrderDestinationException(exception: InvalidOrderDestinationException): ResponseEntity<ErrorResponse> {
+        val status = HttpStatus.BAD_REQUEST
+        val exceptionResponse = ErrorResponse(
+            status = status.value(),
+            error = "Invalid order destination",
             message = exception.message!!,
             timestamp = LocalDateTime.now().toString()
         )

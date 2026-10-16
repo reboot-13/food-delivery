@@ -1,6 +1,7 @@
 package com.example.romanermilov.food_delivery_backend.entity
 
 import com.example.romanermilov.food_delivery_backend.entity.enum.OrderStatus
+import com.example.romanermilov.food_delivery_backend.entity.enum.OrderType
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -38,6 +39,35 @@ class OrderEntity (
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: OrderStatus = OrderStatus.CREATED,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_type", nullable = false)
+    var orderType: OrderType,
+
+    @Column(name = "pickup_point_id")
+    var pickupPointId: Long? = null,
+
+    @Column(name = "pickup_point_title", length = 100)
+    var pickupPointTitle: String? = null,
+
+    @Column(name = "pickup_point_address", length = 255)
+    var pickupPointAddress: String? = null,
+
+    @Column(name = "pickup_point_latitude", precision = 9, scale = 6)
+    var pickupPointLatitude: BigDecimal? = null,
+
+    @Column(name = "pickup_point_longitude", precision = 9, scale = 6)
+    var pickupPointLongitude: BigDecimal? = null,
+
+    @Column(name = "delivery_address", length = 255)
+    var deliveryAddress: String?,
+
+    @Column(name = "delivery_latitude", precision = 9, scale = 6)
+    var deliveryLatitude: BigDecimal?,
+
+    @Column(name = "delivery_longitude", precision = 9, scale = 6)
+    var deliveryLongitude: BigDecimal?,
+
 
     @Column(name = "total_price", nullable = false)
     var totalPrice: BigDecimal = BigDecimal.ZERO,

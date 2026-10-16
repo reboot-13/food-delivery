@@ -7,15 +7,23 @@ import com.example.fooddeliveryandroid.data.remote.dto.request.AddCartItemReques
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.repository.CartRepository
 import com.example.fooddeliveryandroid.data.repository.CatalogRepository
+import com.example.fooddeliveryandroid.data.repository.CheckoutPreferencesRepository
 import com.example.fooddeliveryandroid.domain.model.CatalogProduct
+import com.example.fooddeliveryandroid.domain.model.enums.OrderType
 import com.example.fooddeliveryandroid.domain.useCase.QuantityUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -25,6 +33,7 @@ import javax.inject.Inject
 class ProductViewModel @Inject constructor(
     private val userSession: UserSession,
     private val catalogRepository: CatalogRepository,
+    private val checkoutPreferencesRepository: CheckoutPreferencesRepository,
     private val cartRepository: CartRepository,
     private val quantityUpdater: QuantityUpdater
 ): ViewModel() {
@@ -47,6 +56,25 @@ class ProductViewModel @Inject constructor(
             initialValue = null
         )
 
+
+    val isAddressSelected: StateFlow<Boolean> =
+        combine(
+            checkoutPreferencesRepository.selectedAddressId,
+            checkoutPreferencesRepository.selectedPickupPointId,
+            checkoutPreferencesRepository.orderType,
+        ) { addressId, pickupPointId, orderType ->
+            when (orderType) {
+                OrderType.DELIVERY -> addressId != null
+                OrderType.PICKUP -> pickupPointId != null
+            }
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            false
+        )
+
+    private val _events = MutableSharedFlow<ProductEvent> ()
+    val events = _events.asSharedFlow()
 
     fun loadProduct(productId: Long) {
         this.productId.value = productId

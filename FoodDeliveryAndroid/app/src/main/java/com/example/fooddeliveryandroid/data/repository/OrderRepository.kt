@@ -8,6 +8,7 @@ import com.example.fooddeliveryandroid.domain.mapper.OrderMapper
 import com.example.fooddeliveryandroid.domain.model.CartItem
 import com.example.fooddeliveryandroid.domain.model.Order
 import com.example.fooddeliveryandroid.domain.model.enums.OrderStatus
+import com.example.fooddeliveryandroid.domain.model.enums.OrderType
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -55,12 +56,26 @@ class OrderRepository @Inject constructor(
         }
     }
 
-    suspend fun createOrder(cartItems: List<CartItem>): NetworkResult<Order>{
+    suspend fun createOrder(
+        cartItems: List<CartItem>,
+        orderType: OrderType,
+        addressId: Long?,
+        pickupPointId: Long?
+    ): NetworkResult<Order> {
         return safeApiCall {
             val request = CreateOrderRequest(
                 items = cartItems.map { cartItem ->
                     OrderMapper.cartItemToOrderItemRequest(cartItem)
-               }
+               },
+                orderType = orderType,
+                addressId = when (orderType) {
+                    OrderType.DELIVERY -> addressId
+                    OrderType.PICKUP -> null
+                },
+                pickupPointId = when (orderType) {
+                    OrderType.DELIVERY -> null
+                    OrderType.PICKUP -> pickupPointId
+                }
             )
             val response = orderApi.createOrder(request)
             OrderMapper.responseToModel(response)

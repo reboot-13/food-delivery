@@ -1,6 +1,6 @@
 package com.example.fooddeliveryandroid.data.repository.categorySource
 
-import com.example.fooddeliveryandroid.data.remote.dto.CategoryShortResponse
+import com.example.fooddeliveryandroid.data.remote.dto.response.CategoryShortResponse
 import com.example.fooddeliveryandroid.data.remote.network.api.CategoryApi
 import javax.inject.Inject
 

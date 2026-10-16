@@ -1,4 +1,4 @@
-package com.example.fooddeliveryandroid.data.remote.dto
+package com.example.fooddeliveryandroid.data.remote.dto.response
 
 import java.math.BigDecimal
 

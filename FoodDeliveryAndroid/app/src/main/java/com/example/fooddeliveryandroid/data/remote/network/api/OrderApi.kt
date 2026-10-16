@@ -1,6 +1,6 @@
 package com.example.fooddeliveryandroid.data.remote.network.api
 
-import com.example.fooddeliveryandroid.data.remote.dto.OrderResponse
+import com.example.fooddeliveryandroid.data.remote.dto.response.OrderResponse
 import com.example.fooddeliveryandroid.data.remote.dto.request.CreateOrderRequest
 import retrofit2.http.Body
 import retrofit2.http.GET

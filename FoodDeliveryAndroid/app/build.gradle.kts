@@ -1,3 +1,14 @@
+import java.util.Properties
+
+private val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+private val mapApiKey: String = localProperties.getProperty("MAP_KEY", "")
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -6,6 +17,8 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.android)
 }
+
+
 
 android {
     namespace = "com.example.fooddeliveryandroid"
@@ -23,6 +36,13 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "MAPKIT_API_KEY",
+            "\"$mapApiKey\""
+        )
+
     }
 
     buildTypes {
@@ -36,6 +56,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     kotlinOptions {
         jvmTarget = "17"
@@ -89,4 +110,6 @@ dependencies {
 
     implementation(libs.materialExtendedIcons)
 
+// Yandex MapKit
+    implementation(libs.yandexMaps)
 }

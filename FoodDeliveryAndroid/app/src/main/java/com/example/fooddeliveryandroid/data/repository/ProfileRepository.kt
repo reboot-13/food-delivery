@@ -1,12 +1,13 @@
 package com.example.fooddeliveryandroid.data.repository
 
-import com.example.fooddeliveryandroid.data.remote.dto.AuthResponse
+import com.example.fooddeliveryandroid.data.remote.dto.response.AuthResponse
 import com.example.fooddeliveryandroid.data.remote.dto.request.AuthRequest
 import com.example.fooddeliveryandroid.data.remote.dto.request.RegisterRequest
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult
 import com.example.fooddeliveryandroid.data.remote.network.api.UserApi
 import com.example.fooddeliveryandroid.data.remote.network.safeApiCall
 import com.example.fooddeliveryandroid.data.local.datastore.SessionManager
+import com.example.fooddeliveryandroid.data.remote.dto.request.UpdateProfileRequest
 import com.example.fooddeliveryandroid.domain.mapper.UserMapper
 import com.example.fooddeliveryandroid.domain.model.User
 import javax.inject.Inject
@@ -35,6 +36,16 @@ class ProfileRepository @Inject constructor(
         return safeApiCall {
             val userResponse = userApi.getCurrentUser()
             UserMapper.responseToModel(userResponse)
+        }
+    }
+
+    suspend fun updateProfile(
+        request: UpdateProfileRequest
+    ): NetworkResult<User> {
+        return safeApiCall {
+            val response = userApi.updateCurrentUser(request)
+
+            UserMapper.responseToModel(response)
         }
     }
 }

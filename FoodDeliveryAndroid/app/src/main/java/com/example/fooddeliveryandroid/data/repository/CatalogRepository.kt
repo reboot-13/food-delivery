@@ -64,6 +64,7 @@ class CatalogRepository @Inject constructor(
                         }
                     )
                 }
+
             } else {
                 combine(
                     productRepository.observeProducts(),
@@ -74,10 +75,10 @@ class CatalogRepository @Inject constructor(
                         cartItem.product.id to cartItem.quantity
                     }
 
-                    CatalogData (
+                    CatalogData(
                         categories = categories,
                         products = products.map { product ->
-                            CatalogProduct (
+                            CatalogProduct(
                                 product = product,
                                 quantity = quantities[product.id] ?: 0
                             )
@@ -85,8 +86,6 @@ class CatalogRepository @Inject constructor(
                     )
                 }
             }
-
-
         }
     }
 

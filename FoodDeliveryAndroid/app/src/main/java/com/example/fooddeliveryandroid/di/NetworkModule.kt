@@ -1,9 +1,11 @@
 package com.example.fooddeliveryandroid.di
 
 import com.example.fooddeliveryandroid.data.remote.network.AuthInterceptor
+import com.example.fooddeliveryandroid.data.remote.network.api.AddressApi
 import com.example.fooddeliveryandroid.data.remote.network.api.CartApi
 import com.example.fooddeliveryandroid.data.remote.network.api.CategoryApi
 import com.example.fooddeliveryandroid.data.remote.network.api.OrderApi
+import com.example.fooddeliveryandroid.data.remote.network.api.PickupPointApi
 import com.example.fooddeliveryandroid.data.remote.network.api.ProductApi
 import com.example.fooddeliveryandroid.data.remote.network.api.UserApi
 import dagger.Module
@@ -20,6 +22,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     private const val BASE_URL = "http://192.168.1.16:8080/"
+//    private const val BASE_URL = "http://192.168.1.67:8080/"
+//    private const val BASE_URL = "http://172.20.10.2:8080/"
+
+
 
     @Provides
     @Singleton
@@ -90,5 +96,21 @@ object NetworkModule {
         retrofit: Retrofit
     ): OrderApi {
         return retrofit.create(OrderApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAddressApi(
+        retrofit: Retrofit
+    ): AddressApi {
+        return retrofit.create(AddressApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providePickupPointApi(
+        retrofit: Retrofit
+    ): PickupPointApi {
+        return retrofit.create(PickupPointApi::class.java)
     }
 }

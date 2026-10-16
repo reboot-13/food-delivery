@@ -7,6 +7,7 @@ data class User (
     val id: Long,
     val name: String,
     val phoneNumber: String,
+    val addresses: List<Address>,
     val role: UserRole = UserRole.USER,
     val createdAt: LocalDateTime
 )

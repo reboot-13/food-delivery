@@ -2,8 +2,8 @@ package com.example.fooddeliveryandroid.domain.mapper
 
 import com.example.fooddeliveryandroid.data.local.entity.CartItemEntity
 import com.example.fooddeliveryandroid.data.local.room.relation.CartItemWithProduct
-import com.example.fooddeliveryandroid.data.remote.dto.CartItemResponse
-import com.example.fooddeliveryandroid.data.remote.dto.ProductCartItemResponse
+import com.example.fooddeliveryandroid.data.remote.dto.response.CartItemResponse
+import com.example.fooddeliveryandroid.data.remote.dto.response.ProductCartItemResponse
 import com.example.fooddeliveryandroid.domain.model.CartItem
 import com.example.fooddeliveryandroid.domain.model.Category
 import com.example.fooddeliveryandroid.domain.model.Product

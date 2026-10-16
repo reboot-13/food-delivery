@@ -8,11 +8,7 @@ sealed class Screen (val route: String){
 
     data object Cart : Screen("cart")
 
-    data object Product : Screen("product/{productId}") {
-        fun createRoute(productId: Long): String {
-            return "product/$productId"
-        }
-    }
+    data object Product : Screen("product/{productId}")
 
     data object Order : Screen("order/{orderId}") {
         fun createRoute(orderId: Long): String {
@@ -25,4 +21,10 @@ sealed class Screen (val route: String){
     data object Splash : Screen("splash")
 
     data object MainScreen: Screen(route = "mainScreen")
+
+    data object AddAddress: Screen(route = "addAddress")
+
+    data object AddressForm: Screen(route = "addressForm") {
+
+    }
 }

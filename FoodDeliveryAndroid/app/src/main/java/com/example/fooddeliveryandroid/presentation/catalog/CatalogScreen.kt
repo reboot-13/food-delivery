@@ -37,16 +37,18 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,10 +59,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fooddeliveryandroid.domain.model.CatalogProduct
 import com.example.fooddeliveryandroid.domain.model.Category
 import com.example.fooddeliveryandroid.domain.model.Product
+import com.example.fooddeliveryandroid.domain.model.enums.OrderType
+import com.example.fooddeliveryandroid.domain.useCase.buildAddressText
 import com.example.fooddeliveryandroid.presentation.AppSnackBar
 import com.example.fooddeliveryandroid.presentation.cart.ProductImage
 import com.example.fooddeliveryandroid.presentation.cart.QuantitySelector
-import com.example.fooddeliveryandroid.presentation.product.ProductScreen
+import com.example.fooddeliveryandroid.presentation.orderTypeSelector.OrderTypeSelectorScreen
+import com.example.fooddeliveryandroid.presentation.product.ProductModalBottomSheet
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
@@ -78,8 +83,6 @@ fun CatalogScreen (
         SnackbarHostState()
     }
 
-    val events = catalogViewModel.events
-
     Scaffold(
         snackbarHost = {
             SnackbarHost(
@@ -92,29 +95,23 @@ fun CatalogScreen (
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp)
                     )
-                })
+                }
+            )
         },
-    ) {
+    ) { innerPadding ->
         when(val state = uiState.value) {
             is CatalogUIState.Loading -> {
                 LoadingProcess()
             }
             is CatalogUIState.Success -> {
                 CatalogSuccess(
-                    events = events,
                     categories = state.catalogData.categories,
                     products = state.catalogData.products,
-                    onAddToCart = { productId ->
-                        catalogViewModel.addProductToCart(productId)
-                    },
-                    onUpdateQuantity = { productId, quantity ->
-                        catalogViewModel.updateQuantity(productId, quantity)
-                    },
                     snackBarHostState = snackBarHostState,
-                    onSynchronize = {
-                        catalogViewModel.loadCatalog()
-                    },
-                    onNavigateToAuthScreen = onNavigateToAuthScreen
+                    onNavigateToAuthScreen = onNavigateToAuthScreen,
+                    catalogViewModel = catalogViewModel,
+                    modifier = Modifier
+                        .padding(top = innerPadding.calculateTopPadding())
                 )
             }
             is CatalogUIState.Error -> Text(state.message)
@@ -129,63 +126,104 @@ fun CatalogScreen (
 @Composable
 fun CatalogSuccess(
     modifier: Modifier = Modifier,
-    events: SharedFlow<CatalogEvent>,
     categories: List<Category>,
     products: List<CatalogProduct>,
-    onAddToCart: (Long) -> Unit,
-    onUpdateQuantity: (Long, Int) -> Unit,
     snackBarHostState: SnackbarHostState,
-    onSynchronize: () -> Unit,
-    onNavigateToAuthScreen: () -> Unit
+    onNavigateToAuthScreen: () -> Unit,
+    catalogViewModel: CatalogViewModel
+
 ) {
+    val selectedPickupPoint by catalogViewModel.selectedPickupPoint.collectAsStateWithLifecycle()
+    val selectedOrderType by catalogViewModel.orderType.collectAsStateWithLifecycle()
+    val isAddressListShow by catalogViewModel.isAddressListShow.collectAsStateWithLifecycle()
+    val events = catalogViewModel.events
+    val selectedAddress by catalogViewModel.selectedAddress.collectAsStateWithLifecycle()
+
+
     val listState = rememberLazyListState()
     val productsByCategory = remember(products) {
         products.groupBy { it.product.category?.id}
-    }
-    val coroutineScope = rememberCoroutineScope ()
-
-    val currentCategoryIndex by remember {
-        derivedStateOf {
-
-            listState.layoutInfo
-                .visibleItemsInfo
-                .firstOrNull {
-                    it.index > 0
-                }
-                ?.index
-                ?.minus(1)
-        }
-    }
-    var selectedProductId by rememberSaveable() {
-        mutableStateOf<Long?>(null)
     }
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val coroutineScope = rememberCoroutineScope ()
 
+    var currentCategoryIndex by remember {
+        mutableIntStateOf(0)
+    }
 
-    if (selectedProductId != null) {
+    LaunchedEffect(listState, categories) {
+        snapshotFlow {
+            listState.layoutInfo.visibleItemsInfo
+                .firstOrNull { it.index > 0 }
+                ?.index
+                ?.minus(2)
+        }.collect { index ->
+            if (index != null && index in categories.indices) {
+                currentCategoryIndex = index
+            }
+        }
+    }
+
+//    val currentCategoryIndex by remember {
+//        derivedStateOf {
+//
+//            listState.layoutInfo
+//                .visibleItemsInfo
+//                .firstOrNull {
+//                    it.index > 0
+//                }
+//                ?.index
+//                ?.minus(2)
+//        }
+//    }
+
+    if (isAddressListShow) {
         ModalBottomSheet(
+            onDismissRequest = {
+                catalogViewModel.closeAddressList()
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            sheetState = sheetState,
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(top = 80.dp),
-            onDismissRequest = {selectedProductId = null},
-            sheetState = sheetState,
-
-
         ) {
-            ProductScreen(productId = selectedProductId!!)
+
+            OrderTypeSelectorScreen()
         }
     }
+
+    var selectedProductId by rememberSaveable() {
+        mutableStateOf<Long?>(null)
+    }
+
+    ProductModalBottomSheet(
+        selectedProductId = selectedProductId,
+        onDismissRequest = {
+            selectedProductId = null
+        }
+    )
 
     //SnackBarManager
     CatalogSnackBars(
         snackBarHostState = snackBarHostState,
         events = events,
         onNavigateToAuthScreen = onNavigateToAuthScreen,
-        onSynchronize = onSynchronize
+        onSynchronize = {
+            catalogViewModel.loadCatalog()
+        },
     )
+
+    val addressText =
+        selectedAddress?.let { buildAddressText(it) } ?: "Выберите адрес доставки:"
+
+    val pickupPointAddressText =
+        selectedPickupPoint?.address ?: "Выберите пункт самовывоза"
+
+
 
     LazyColumn(
         state = listState,
@@ -193,16 +231,47 @@ fun CatalogSuccess(
         modifier = modifier
             .padding(start = 12.dp)
     ) {
+
         stickyHeader {
             CategoryRow(
                 categories = categories,
                 currentCategoryIndex = currentCategoryIndex,
                 onCategoryClick = { categoryIndex ->
                     coroutineScope.launch {
-                        listState.animateScrollToItem(categoryIndex + 1, )
+                        listState.animateScrollToItem(categoryIndex + 2, )
                     }
                 }
             )
+        }
+
+        item {
+            when (selectedOrderType) {
+                OrderType.DELIVERY -> {
+                    TextButton (
+                        onClick = {
+                            catalogViewModel.showAddressList()
+                        },
+                    ) {
+                        Text(
+                            text = addressText
+                        )
+                    }
+                }
+                OrderType.PICKUP -> {
+                    TextButton (
+                        onClick = {
+                            catalogViewModel.showAddressList()
+                        },
+                    ) {
+                        Text(
+                            text = pickupPointAddressText
+                        )
+                    }
+                }
+                null -> {
+
+                }
+            }
         }
 
         itemsIndexed(
@@ -217,8 +286,12 @@ fun CatalogSuccess(
                 onProductClick = {productId ->
                     selectedProductId = productId
                 },
-                onAddToCart = onAddToCart,
-                onUpdateQuantity = onUpdateQuantity
+                onAddToCart = { productId ->
+                    catalogViewModel.addProductToCart(productId)
+                },
+                onUpdateQuantity = { productId, quantity ->
+                    catalogViewModel.updateQuantity(productId, quantity)
+                }
             )
         }
         item {
@@ -264,7 +337,6 @@ fun CategoryRow(
                 currentCategoryIndex
             )
         }
-
     }
 }
 @Composable
@@ -394,6 +466,7 @@ fun CatalogQuantitySelector (
                 modifier = Modifier
                     .height(36.dp)
                     .width(100.dp)
+                    .background(MaterialTheme.colorScheme.primary)
             )
         }
     }
@@ -454,6 +527,24 @@ fun CatalogSnackBars(
                     )
                     if (result == SnackbarResult.ActionPerformed) {
                         onSynchronize()
+                    }
+                }
+
+                is CatalogEvent.ShowSelectAddressSnackBar -> {
+                    snackBarHostState.showSnackbar(
+                        message = "Сначала нужно выбрать адрес доставки",
+                        withDismissAction = true,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                is CatalogEvent.ShowAuthToChooseAddressSnackBar -> {
+                    val result = snackBarHostState.showSnackbar(
+                        message = "Чтобы выбрать адрес необходимо авторизоваться",
+                        actionLabel = "Войти",
+                        duration = SnackbarDuration.Short
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        onNavigateToAuthScreen()
                     }
                 }
             }

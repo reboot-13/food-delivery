@@ -4,4 +4,8 @@ sealed class CatalogEvent {
     data object ShowAuthSnackBar: CatalogEvent()
 
     data object ShowSyncSnackBar: CatalogEvent()
+
+    data object ShowSelectAddressSnackBar: CatalogEvent()
+
+    data object ShowAuthToChooseAddressSnackBar: CatalogEvent()
 }

@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import jakarta.servlet.DispatcherType
+import org.springframework.security.authorization.SingleResultAuthorizationManager.permitAll
 
 
 @Configuration
@@ -26,7 +27,8 @@ class SecurityConfig (
                         "/categories/**",
                         "/users/register",
                         "/users/auth",
-                        "/cart/test-error"
+                        "/pickup-points/**",
+                        "/pickup-points",
                     )
                     .permitAll()
                     .anyRequest()

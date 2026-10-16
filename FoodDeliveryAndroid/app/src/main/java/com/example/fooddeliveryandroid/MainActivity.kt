@@ -10,12 +10,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.fooddeliveryandroid.presentation.navigation.AppNavigation
 import com.example.fooddeliveryandroid.ui.theme.FoodDeliveryAndroidTheme
+import com.yandex.mapkit.MapKitFactory
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MapKitFactory.initialize(this)
         enableEdgeToEdge()
         setContent {
             FoodDeliveryAndroidTheme {
@@ -30,5 +32,15 @@ class MainActivity : ComponentActivity() {
 
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        MapKitFactory.getInstance().onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        MapKitFactory.getInstance().onStop()
     }
 }
