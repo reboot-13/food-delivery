@@ -2,7 +2,7 @@ package com.example.fooddeliveryandroid.presentation.address.addAddress
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fooddeliveryandroid.domain.geocoder.YandexReverseGeocoder
+import com.example.fooddeliveryandroid.domain.geocoder.YandexGeocoder
 import com.example.fooddeliveryandroid.domain.model.AddressMapSelection
 import com.yandex.mapkit.geometry.Point
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddAddressViewModel @Inject constructor(
-    private val reverseGeocoder: YandexReverseGeocoder,
+    private val reverseGeocoder: YandexGeocoder,
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(AddAddressUIState())
@@ -74,7 +74,7 @@ class AddAddressViewModel @Inject constructor(
                     _uiState.update { state ->
                         state.copy(
                             isGeocoding = false,
-                            error = "Не удалось определить адрес, нажмите чтобы ввесьи вручную"
+                            error = "Не удалось определить адрес, нажмите чтобы ввести вручную"
                         )
                     }
                 }

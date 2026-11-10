@@ -14,19 +14,19 @@ class ProductService (
 ){
     @Transactional
     fun getAllProducts(): List<ProductResponse>{
-        return productRepository.findByAvailableTrue()
+        return productRepository.findAll()
             .map(ProductMapper::toResponse)
     }
     @Transactional
     fun getAllProductsByCategoryId(categoryId: Long): List<ProductResponse>{
-        return productRepository.findByCategoryIdAndAvailableTrue(categoryId)
+        return productRepository.findByCategoryId(categoryId)
             .map(ProductMapper::toResponse)
     }
 
     @Transactional
     fun getProductById(id: Long): ProductResponse {
         val productResponse = productRepository
-            .findByIdAndAvailableTrue(id)
+            .findById(id)
             .orElseThrow { ProductNotFoundException(id) }
             .let(ProductMapper::toResponse)
         return productResponse

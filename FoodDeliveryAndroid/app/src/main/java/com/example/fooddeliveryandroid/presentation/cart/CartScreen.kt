@@ -1,17 +1,19 @@
 package com.example.fooddeliveryandroid.presentation.cart
 
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Indication
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,20 +24,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.RippleDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.ripple
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,24 +51,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.example.fooddeliveryandroid.R
 import com.example.fooddeliveryandroid.domain.model.CartItem
 import com.example.fooddeliveryandroid.domain.model.Order
 import com.example.fooddeliveryandroid.domain.model.OrderItem
 import com.example.fooddeliveryandroid.domain.model.enums.OrderStatus
 import com.example.fooddeliveryandroid.presentation.order.OrderStatusBar
+import com.example.fooddeliveryandroid.presentation.product.ProductImage
 import com.example.fooddeliveryandroid.presentation.product.ProductModalBottomSheet
-import com.example.fooddeliveryandroid.presentation.product.ProductScreen
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 
 @Composable
@@ -79,67 +79,61 @@ fun CartScreen (
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val createdOrderId by viewModel.createdOrderId.collectAsStateWithLifecycle()
     val currentOrder by viewModel.currentOrder.collectAsStateWithLifecycle()
+    Scaffold() {innerPadding ->
+        when (val result = uiState.value) {
 
-    when (val result = uiState.value) {
+            is CartUIState.Loading ->
+                LoadingProcess()
 
-        is CartUIState.Loading ->
-            LoadingProcess()
-
-        is CartUIState.Unauthorized ->  {
-            Box(modifier = Modifier
-                .fillMaxSize(),
-                contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Войдите, чтобы сделать заказ")
-                    Button(
-                        onClick = onGoToAuthScreen
-                    ) {
-                        Text("Войти")
+            is CartUIState.Unauthorized ->  {
+                Box(modifier = Modifier
+                    .fillMaxSize(),
+                    contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Войдите, чтобы сделать заказ")
+                        Button(
+                            onClick = onGoToAuthScreen
+                        ) {
+                            Text("Войти")
+                        }
                     }
                 }
             }
-        }
-        is CartUIState.Success -> {
+            is CartUIState.Success -> {
 
-            LaunchedEffect(result.cartItems.isNotEmpty()) {
-                if (result.cartItems.isNotEmpty() && createdOrderId != null) {
-                    viewModel.clearCreatedOrder()
+                LaunchedEffect(result.cartItems.isNotEmpty()) {
+                    if (result.cartItems.isNotEmpty() && createdOrderId != null) {
+                        viewModel.clearCreatedOrder()
+                    }
                 }
-            }
 
-            if (result.cartItems.isEmpty() && createdOrderId != null) {
-                OrderCreatedContent(
-                    order = currentOrder,
-                    onNavigateToCatalog = {
-                        onGoToCatalog()
-                    },
-                    onShowOrder = {orderId ->
-                        onShowOrder(orderId)
-                    },
-                    onRepeatOrder = { orderItems ->
-                        TODO("Реализовать repeatOrder, скорее всего сделать UseCase - для Cart и OrderDetails VM")
-                    }
-                )
-            } else if (result.cartItems.isNotEmpty()) {
-                ShoppingCart(
-                    cartItems = result.cartItems,
-                    onUpdateQuantity = { id, quantity ->
-                        viewModel.updateCartItemQuantity(
-                            productId = id,
-                            quantity = quantity
-                        )
-                    },
-                    onCreateOrder = {cartItems ->
-                        viewModel.createOrder(
-                            cartItems
-                        )
-                    }
-                )
-            } else {
-                EmptyCartScreen(onGoToCatalog = onGoToCatalog)
+                if (result.cartItems.isEmpty() && createdOrderId != null) {
+                    OrderCreatedContent(
+                        order = currentOrder,
+                        onNavigateToCatalog = {
+                            onGoToCatalog()
+                        },
+                        onShowOrder = {orderId ->
+                            onShowOrder(orderId)
+                        },
+                        onRepeatOrder = { orderItems ->
+                            TODO("Реализовать repeatOrder, скорее всего сделать UseCase - для Cart и OrderDetails VM")
+                        }
+                    )
+                } else if (result.cartItems.isNotEmpty()) {
+                    ShoppingCart(
+                        viewModel = viewModel,
+                        cartItems = result.cartItems,
+                        modifier = Modifier
+                            .padding(innerPadding)
+                    )
+                } else {
+                    EmptyCartScreen(onGoToCatalog = onGoToCatalog)
+                }
             }
         }
     }
+
 }
 
 @Composable
@@ -166,14 +160,13 @@ fun EmptyCartScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingCart(
-    cartItems: List<CartItem>,
-    onUpdateQuantity: (Long, Int) -> Unit,
-    onCreateOrder: (List<CartItem>) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: CartViewModel,
+    cartItems: List<CartItem>
 ) {
-    var selectedProductId by rememberSaveable() {
+    var selectedProductId by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
 
@@ -184,152 +177,301 @@ fun ShoppingCart(
         }
     )
 
-    val totalPrice =
-        cartItems.map { cartItem ->
-            cartItem.product.price.toInt() * cartItem.quantity
-        }.sumOf { it }
+    val haveUnavailableProduct = cartItems.any {
+        !it.product.available
+    }
+
+    val totalPrice = cartItems.sumOf { item ->
+        item.product.price.toInt() * item.quantity
+    }
+
+
     Column(
-        modifier = Modifier
-        .fillMaxSize()
-        .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 14.dp,
+            ),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Surface(
-            shape = RoundedCornerShape(32.dp),
-            color = Color.White,
-            modifier = Modifier.fillMaxWidth(),
+        Text(
+            text = "Способ получения:",
+            style = MaterialTheme.typography.labelLarge,
+
+        )
+
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth(),
-            ) {
-                items(
-                    items = cartItems,
-                    key = { it.product.id }
-                ) { cartItem ->
-                    CartItemCard(
-                        cartItem = cartItem,
-                        onUpdateQuantity = onUpdateQuantity,
-                        onShowProduct = { productId ->
-                            selectedProductId = productId
-                        }
+            items(
+                items = cartItems,
+                key = {it.product.id}
+            ) { cartItem ->
+                SwipeToDeleteCartItem(
+                    cartItem = cartItem,
+                    onUpdateQuantity = { id, quantity ->
+                        viewModel.updateCartItemQuantity(productId = id, quantity = quantity)
+                    },
+                    onShowProduct = {
+                        selectedProductId = it
+                    },
+                    modifier = Modifier.animateItem(
+                        placementSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                        fadeInSpec = tween(150),
+                        fadeOutSpec = tween (200)
                     )
+                )
+            }
+            item (key = "unavailableWarning"){
+                if (haveUnavailableProduct) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItem(
+                                placementSpec = spring(
+                                    stiffness = Spring.StiffnessMediumLow
+                                ),
+                                fadeInSpec = tween(200),
+                                fadeOutSpec = tween(150)
+                            ),
+                        shape = RoundedCornerShape(18.dp),
+                        color = MaterialTheme.colorScheme.secondary
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text(
+                                text = "У нас кое-что закончилось :( \nУдалите недоступные товары из корзины, чтобы оформить заказ",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondary
+                            )
+                        }
+                    }
                 }
             }
-        }
 
-        Text(
-            text = "Итого",
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Light,
-            fontSize = 12.sp,
-            textAlign = TextAlign.Center
-        )
-        Text(
-            text = "$totalPrice ₽",
-            style = MaterialTheme.typography.bodyLarge,
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center
-        )
+            item (key = "totalPrice") {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItem(
+                            placementSpec = spring(
+                                stiffness = Spring.StiffnessMediumLow
+                            ),
+                            fadeInSpec = tween(200),
+                            fadeOutSpec = tween(150)
+                        )
+                ) {
+                    Text(
+                        text = "Итого",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Light,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "$totalPrice ₽",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center
+                    )
 
-        Button(
-            onClick = {
-                onCreateOrder(cartItems)
+                    Button(
+                        onClick = {
+                            viewModel.createOrder(cartItems)
+                        },
+                        enabled = !haveUnavailableProduct
+                    ) {
+                        Text("Оформить заказ")
+                    }
+                }
             }
-        ) {
-            Text("Оформить заказ")
+            item {
+                Spacer(modifier = Modifier.height(120.dp))
+            }
         }
-
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartItemCard(
+fun SwipeToDeleteCartItem(
+    modifier: Modifier = Modifier,
     cartItem: CartItem,
     onUpdateQuantity: (Long, Int) -> Unit,
     onShowProduct: (Long) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(130.dp)
-            .padding(16.dp)
-            .clickable(
-                onClick = {
-                    onShowProduct(cartItem.product.id)
-                },
-                interactionSource = null,
-                indication = null
-            ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        ProductImage(
-            imageUrl = cartItem.product.imageUrl,
-            imageDescription = cartItem.product.name,
-            modifier = Modifier
-                .size(80.dp)
-        )
-        Column(
-            horizontalAlignment = Alignment.Start,
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(start = 12.dp)
-                .padding(vertical = 12.dp)
-                .weight(1f)
-        ) {
-            Text(
-                text = cartItem.product.name,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(0.2f)
-            )
+    val dismissState = rememberSwipeToDismissBoxState ()
 
-            if (cartItem.product.weight != null) {
-                Text(
-                    text = "${cartItem.product.weight} г",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontSize = 10.sp,
-                    modifier = Modifier.weight(0.2f)
+    LaunchedEffect(dismissState.currentValue) {
+        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+                onUpdateQuantity(cartItem.product.id, 0)
+        }
+    }
+
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        modifier = modifier
+            .fillMaxWidth(),
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.error),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.DeleteSweep,
+                    contentDescription = "Delete",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(end = 16.dp)
+                        .size(30.dp)
                 )
             }
-
-            QuantitySelector(
-                quantity = cartItem.quantity,
-                onUpdateQuantity = { quantity ->
-                    onUpdateQuantity(cartItem.product.id, quantity)
-                },
-                modifier = Modifier
-                    .height(32.dp)
-                    .width(100.dp)
-                    .weight(0.6f),
-                bgColor = MaterialTheme.colorScheme.background,
-                contentColor = Color.DarkGray
-            )
         }
-        Text(
-            text = "${cartItem.product.price.toInt() * cartItem.quantity} ₽",
-            style = MaterialTheme.typography.bodyLarge,
-            fontSize = 16.sp
+    ) {
+        CartItemCard(
+            cartItem = cartItem,
+            onShowProduct = onShowProduct,
+            onUpdateQuantity = onUpdateQuantity
         )
     }
+
 
 }
 
 @Composable
-fun ProductImage(
-    imageUrl: String?,
-    imageDescription: String,
-    modifier: Modifier = Modifier
+fun CartItemCard (
+    cartItem: CartItem,
+    onUpdateQuantity: (Long, Int) -> Unit,
+    onShowProduct: (Long) -> Unit
 ) {
-    AsyncImage(
-        model = imageUrl,
-        contentDescription = imageDescription,
-        placeholder = painterResource( R.drawable.empty_product_image),
-        error = painterResource(R.drawable.empty_product_image),
+    val isAvailable = cartItem.product.available
 
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp)),
-        contentScale = ContentScale.Crop)
+    val cardColor = if (isAvailable) {
+        Color.White
+    } else {
+        Color(0xFFF0ECEE)
+    }
+
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = cardColor,
+        border = if (isAvailable) {
+            null
+        } else {
+            BorderStroke(1.dp, Color(0xFFE7DDE0))
+        }
+    ){
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = null,
+                    indication = null
+                ) {
+                    onShowProduct(cartItem.product.id)
+                }
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(88.dp)
+                    .clip(RoundedCornerShape(18.dp))
+            ) {
+                ProductImage(
+                    imageUrl = cartItem.product.imageUrl,
+                    imageDescription = cartItem.product.name,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                if (!isAvailable) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(
+                                Color.Black.copy(alpha = 0.42f)
+                            )
+                    ){
+                        Text(
+                            text = "Раскупили",
+                            modifier = Modifier
+                                .align (Alignment.Center),
+                            color = Color.LightGray,
+                            textAlign = TextAlign.Center)
+                    }
+
+                }
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = cartItem.product.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                if (cartItem.product.weight != null) {
+                    Text(
+                        text = "${cartItem.product.weight} г",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF8E7D7F)
+                    )
+                }
+                QuantitySelector(
+                    quantity = cartItem.quantity,
+                    onUpdateQuantity = { quantity ->
+                        onUpdateQuantity(
+                            cartItem.product.id,
+                            quantity
+                        )
+                    },
+                    modifier = Modifier
+                        .height(32.dp)
+                        .width(126.dp),
+                    bgColor = if (isAvailable) {
+                        Color(0xFFF7EEEE)
+                    } else {
+                        Color(0xFFE5E0E2)
+                    },
+                    contentColor = if (isAvailable) {
+                        Color(0xFF564B4D)
+                    } else {
+                        Color(0xFF958C90)
+                    },
+                    canIncrease = isAvailable
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = "${cartItem.product.price.toInt() * cartItem.quantity} ₽ "
+            )
+        }
+
+    }
 }
 
 @Composable
@@ -338,7 +480,8 @@ fun QuantitySelector(
     onUpdateQuantity: (Int) -> Unit,
     modifier: Modifier = Modifier,
     bgColor: Color = MaterialTheme.colorScheme.primary,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimary
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    canIncrease: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Surface(
@@ -349,7 +492,7 @@ fun QuantitySelector(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = modifier
 
 
@@ -378,6 +521,7 @@ fun QuantitySelector(
                 onClick = {
                     onUpdateQuantity(quantity + 1)
                 },
+                enabled = canIncrease,
                 colors = IconButtonDefaults.iconButtonColors(
                     contentColor = contentColor
                 )
@@ -390,6 +534,8 @@ fun QuantitySelector(
         }
     }
 }
+
+
 
 
 @Composable

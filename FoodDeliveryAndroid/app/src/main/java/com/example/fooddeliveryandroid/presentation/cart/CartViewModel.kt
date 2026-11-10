@@ -1,7 +1,5 @@
 package com.example.fooddeliveryandroid.presentation.cart
 
-import android.util.Log
-import android.util.Log.e
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fooddeliveryandroid.data.local.datastore.UserSession
@@ -30,7 +28,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.collections.filter
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel

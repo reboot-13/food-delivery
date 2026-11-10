@@ -22,9 +22,6 @@ class UserSession @Inject constructor(
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser = _currentUser.asStateFlow()
 
-    val isAuthorized = _currentUser.map { it != null }
-
-
     private val lastCreatedOrderIdKey =
         longPreferencesKey("last_created_order_id")
 

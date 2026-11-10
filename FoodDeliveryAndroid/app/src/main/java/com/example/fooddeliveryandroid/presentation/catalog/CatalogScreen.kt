@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -62,9 +61,9 @@ import com.example.fooddeliveryandroid.domain.model.Product
 import com.example.fooddeliveryandroid.domain.model.enums.OrderType
 import com.example.fooddeliveryandroid.domain.useCase.buildAddressText
 import com.example.fooddeliveryandroid.presentation.AppSnackBar
-import com.example.fooddeliveryandroid.presentation.cart.ProductImage
 import com.example.fooddeliveryandroid.presentation.cart.QuantitySelector
 import com.example.fooddeliveryandroid.presentation.orderTypeSelector.OrderTypeSelectorScreen
+import com.example.fooddeliveryandroid.presentation.product.ProductImage
 import com.example.fooddeliveryandroid.presentation.product.ProductModalBottomSheet
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 import kotlinx.coroutines.flow.SharedFlow
@@ -401,7 +400,8 @@ fun ProductCard (
                 imageUrl = product.imageUrl,
                 imageDescription = product.name,
                 modifier = Modifier
-                    .size(120.dp)
+                    .height(120.dp)
+                    .width(150.dp)
             )
             Text(
                 text = product.name,

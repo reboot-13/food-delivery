@@ -1,6 +1,5 @@
 package com.example.fooddeliveryandroid.presentation.pickupPoint
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fooddeliveryandroid.data.remote.network.NetworkResult

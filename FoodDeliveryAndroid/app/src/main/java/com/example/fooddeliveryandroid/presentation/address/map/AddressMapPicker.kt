@@ -1,6 +1,5 @@
 package com.example.fooddeliveryandroid.presentation.address.map
 
-import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect

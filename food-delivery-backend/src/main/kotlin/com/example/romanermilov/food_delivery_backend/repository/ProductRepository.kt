@@ -5,6 +5,6 @@ import java.util.Optional
 
 interface ProductRepository: JpaRepository<ProductEntity, Long> {
     fun findByAvailableTrue(): List<ProductEntity>
-    fun findByCategoryIdAndAvailableTrue(categoryId: Long): List<ProductEntity>
-    fun findByIdAndAvailableTrue(productId: Long): Optional<ProductEntity>
+    fun findByCategoryId(categoryId: Long): List<ProductEntity>
+
 }

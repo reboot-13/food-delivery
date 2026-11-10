@@ -14,7 +14,7 @@ private val AppColorScheme = lightColorScheme(
 
     background = Color(0xFFFCF5F4),
     onBackground = Color(0xFF49383A),
-    surface = Color(0xFFFFFBFA),
+    surface = Color(0xFFF0ECEE),
     onSurface = Color(0xFF49383A),
 
     surfaceVariant = Color(0xFFF2E2E1),
@@ -23,7 +23,7 @@ private val AppColorScheme = lightColorScheme(
     surfaceContainerHigh = Color(0xFFF2E2E1),
     surfaceContainerHighest = Color(0xFFFFFBFA),
 
-    error = Color(0xFFDB5856)
+    error = Color(0xFFC41E3A)
 
 )
 

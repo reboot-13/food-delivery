@@ -29,6 +29,7 @@ class SecurityConfig (
                         "/users/auth",
                         "/pickup-points/**",
                         "/pickup-points",
+                        "/images/**"
                     )
                     .permitAll()
                     .anyRequest()

@@ -10,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,11 +17,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.fooddeliveryandroid.domain.model.AddressMapSelection
-import com.example.fooddeliveryandroid.presentation.address.AddressesScreen
 import com.example.fooddeliveryandroid.presentation.address.LocalAddAddressNavigation
 import com.example.fooddeliveryandroid.presentation.address.addAddress.AddAddressScreen
 import com.example.fooddeliveryandroid.presentation.address.addressForm.AddressFormScreen
-import com.example.fooddeliveryandroid.presentation.address.map.AddressMapPicker
 import com.example.fooddeliveryandroid.presentation.cart.CartScreen
 import com.example.fooddeliveryandroid.presentation.catalog.CatalogScreen
 import com.example.fooddeliveryandroid.presentation.navigation.bottomBar.BottomBar
@@ -40,7 +37,7 @@ fun MainScaffold(
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val exceptBottomBarScreenRoutes = listOf("order/", "addAddress")
+    val exceptBottomBarScreenRoutes = listOf("order/", "addAddress", "addressForm")
 
     val showBottomBar = exceptBottomBarScreenRoutes.none { destination ->
         currentRoute?.startsWith(destination) == true
@@ -154,7 +151,15 @@ fun MainScaffold(
                             ?.get<AddressMapSelection>(ADDRESS_MAP_SELECTION_KEY)
 
                     }
-                    AddressFormScreen(mapSelection)
+                    AddressFormScreen(
+                        selection = mapSelection,
+                        onBack = {
+                            mainNavController.popBackStack()
+                        },
+                        onAddressCreated = {
+                            mainNavController.navigate(Screen.Catalog.route)
+                        }
+                    )
                 }
             }
         }

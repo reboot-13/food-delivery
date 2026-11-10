@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -35,8 +36,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fooddeliveryandroid.domain.model.Order
 import com.example.fooddeliveryandroid.domain.model.OrderItem
 import com.example.fooddeliveryandroid.domain.model.enums.OrderStatus
-import com.example.fooddeliveryandroid.presentation.cart.ProductImage
 import com.example.fooddeliveryandroid.presentation.order.orderDetails.OrderDetailsContent
+import com.example.fooddeliveryandroid.presentation.product.ProductImage
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -47,20 +48,27 @@ fun OrderScreen(
     viewModel: OrderViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
-    when(val result = uiState.value) {
-        is OrderUIState.Error -> {
+    Scaffold() { innerPadding ->
+        when(val result = uiState.value) {
+            is OrderUIState.Error -> {
 
+            }
+            is OrderUIState.Success -> {
+                SuccessOrders(
+                    orders = result.orders,
+                    modifier = Modifier
+                        .padding(paddingValues = innerPadding))
+            }
+            is OrderUIState.Loading -> LoadingProcess()
         }
-        is OrderUIState.Success -> {
-            SuccessOrders(result.orders)
-        }
-        is OrderUIState.Loading -> LoadingProcess()
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SuccessOrders(
+    modifier: Modifier = Modifier,
     orders: List<Order>,
 ) {
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -89,7 +97,7 @@ private fun SuccessOrders(
 
 
     LazyColumn (
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 12.dp)
     ){
         items(items = orders, key = {it.id}) { order ->

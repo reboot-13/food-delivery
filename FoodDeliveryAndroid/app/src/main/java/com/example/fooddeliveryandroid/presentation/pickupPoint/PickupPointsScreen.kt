@@ -30,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.util.CoilUtils.result
 import com.example.fooddeliveryandroid.domain.model.PickupPoint
 import com.example.fooddeliveryandroid.presentation.address.AddressIcon
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess

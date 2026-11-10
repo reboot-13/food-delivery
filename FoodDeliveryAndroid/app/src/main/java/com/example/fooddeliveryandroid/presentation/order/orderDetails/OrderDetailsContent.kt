@@ -43,8 +43,8 @@ import com.example.fooddeliveryandroid.domain.model.Order
 import com.example.fooddeliveryandroid.domain.model.OrderItem
 import com.example.fooddeliveryandroid.domain.model.enums.OrderStatus
 import com.example.fooddeliveryandroid.domain.model.enums.OrderType
-import com.example.fooddeliveryandroid.presentation.cart.ProductImage
 import com.example.fooddeliveryandroid.presentation.order.OrderStatusBar
+import com.example.fooddeliveryandroid.presentation.product.ProductImage
 import com.example.fooddeliveryandroid.presentation.product.ProductModalBottomSheet
 import java.math.BigDecimal
 
@@ -101,7 +101,7 @@ fun OrderDetailsContent(
 }
 
 @Composable
-fun TotalPriceBlock(totalPrice: BigDecimal) {
+private fun TotalPriceBlock(totalPrice: BigDecimal) {
     Card(modifier = Modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(32.dp))) {

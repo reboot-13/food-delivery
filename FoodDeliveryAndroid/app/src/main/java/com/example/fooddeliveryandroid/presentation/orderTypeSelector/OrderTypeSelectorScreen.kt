@@ -1,8 +1,6 @@
 package com.example.fooddeliveryandroid.presentation.orderTypeSelector
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DirectionsCar
@@ -14,7 +12,6 @@ import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -46,8 +43,6 @@ fun OrderTypeSelectorScreen(
             }
         }
     }
-
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +50,6 @@ fun OrderTypeSelectorScreen(
 private fun OrderTypeSelector(
     selectedOrderType: OrderType,
     onOrderTypeSelected: (OrderType) -> Unit,
-    modifier: Modifier = Modifier
 ) {
 
     SecondaryTabRow(

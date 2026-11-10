@@ -24,7 +24,7 @@ fun ProductModalBottomSheet(
                 .fillMaxHeight()
                 .padding(top = 80.dp),
         ) {
-            ProductScreen(selectedProductId!!)
+            ProductScreen(selectedProductId)
         }
     }
 }

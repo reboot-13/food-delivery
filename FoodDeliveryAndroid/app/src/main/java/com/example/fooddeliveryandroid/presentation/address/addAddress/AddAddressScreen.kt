@@ -22,6 +22,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,42 +55,46 @@ fun AddAddressScreen(
     var isMapMoving by remember {
         mutableStateOf(false)
     }
-
-    Box(modifier = modifier.fillMaxSize()) {
-        AddressMapPicker(
-            modifier = modifier.fillMaxSize(),
-            onMapCenterChanged = viewModel::onMapCenterChanged,
-            onMapMovingChanged = { isMoving ->
-                isMapMoving = isMoving
-            }
-        )
-
-        PickerMarker()
-
-        AnimatedVisibility (
-            visible = !isMapMoving,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth(),
-
-            enter = slideInVertically { fullHeight -> fullHeight } + fadeIn(),
-            exit = slideOutVertically { fullHeight -> fullHeight } + fadeOut()
-        ) {
-            AddressMapBottomPanel(
-                uiState = uiState,
-                onEnterManually = {
-                    onEnterManually(
-                        uiState.selection
-                    )
-                },
-                onContinueToForm = {
-                    onContinueToForm(
-                        uiState.selection
-                    )
-                },
+    Scaffold() { innerPadding ->
+        Box(modifier = modifier
+            .fillMaxSize()
+            .padding(innerPadding)) {
+            AddressMapPicker(
+                modifier = modifier.fillMaxSize(),
+                onMapCenterChanged = viewModel::onMapCenterChanged,
+                onMapMovingChanged = { isMoving ->
+                    isMapMoving = isMoving
+                }
             )
+
+            PickerMarker()
+
+            AnimatedVisibility (
+                visible = !isMapMoving,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth(),
+
+                enter = slideInVertically { fullHeight -> fullHeight } + fadeIn(),
+                exit = slideOutVertically { fullHeight -> fullHeight } + fadeOut()
+            ) {
+                AddressMapBottomPanel(
+                    uiState = uiState,
+                    onEnterManually = {
+                        onEnterManually(
+                            uiState.selection
+                        )
+                    },
+                    onContinueToForm = {
+                        onContinueToForm(
+                            uiState.selection
+                        )
+                    },
+                )
+            }
         }
     }
+
 }
 
 @Composable
@@ -127,7 +132,7 @@ fun AddressMapBottomPanel(
 
     Surface (
         modifier = modifier,
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         color = MaterialTheme.colorScheme.background,
         shadowElevation = 8.dp
     ) {
@@ -150,7 +155,7 @@ fun AddressMapBottomPanel(
                             text = uiState.selection.formattedAddress,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
+                            fontSize = 13.sp,
                             color = Color.DarkGray
                         )
                     }
