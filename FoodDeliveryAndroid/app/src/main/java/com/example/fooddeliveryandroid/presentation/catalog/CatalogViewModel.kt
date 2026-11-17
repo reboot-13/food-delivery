@@ -111,14 +111,12 @@ class CatalogViewModel @Inject constructor(
                 _events.emit(CatalogEvent.ShowAuthToChooseAddressSnackBar)
                 return@launch
             }
+            _isAddressesListShow.value = true
         }
-        _isAddressesListShow.value = true
     }
 
     fun closeAddressList() {
-
         _isAddressesListShow.value = false
-
     }
 
     fun updateQuantity(productId: Long, quantity: Int) {

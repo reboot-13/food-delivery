@@ -11,5 +11,6 @@ class FoodDeliveryApplication: Application() {
         MapKitFactory.setApiKey(
             BuildConfig.MAPKIT_API_KEY
         )
+        MapKitFactory.setLocale("ru_RU")
     }
 }

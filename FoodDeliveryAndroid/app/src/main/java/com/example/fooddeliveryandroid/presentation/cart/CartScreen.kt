@@ -1,6 +1,8 @@
 package com.example.fooddeliveryandroid.presentation.cart
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -11,6 +13,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,6 +29,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,11 +37,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -60,11 +68,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fooddeliveryandroid.R
+import com.example.fooddeliveryandroid.domain.model.Address
 import com.example.fooddeliveryandroid.domain.model.CartItem
 import com.example.fooddeliveryandroid.domain.model.Order
 import com.example.fooddeliveryandroid.domain.model.OrderItem
+import com.example.fooddeliveryandroid.domain.model.PickupPoint
 import com.example.fooddeliveryandroid.domain.model.enums.OrderStatus
+import com.example.fooddeliveryandroid.domain.model.enums.OrderType
+import com.example.fooddeliveryandroid.domain.useCase.buildAddressText
 import com.example.fooddeliveryandroid.presentation.order.OrderStatusBar
+import com.example.fooddeliveryandroid.presentation.orderTypeSelector.OrderTypeSelectorScreen
 import com.example.fooddeliveryandroid.presentation.product.ProductImage
 import com.example.fooddeliveryandroid.presentation.product.ProductModalBottomSheet
 import com.example.fooddeliveryandroid.presentation.splash.LoadingProcess
@@ -185,6 +198,12 @@ fun ShoppingCart(
         item.product.price.toInt() * item.quantity
     }
 
+    val orderType by viewModel.orderType.collectAsStateWithLifecycle()
+    val selectedAddress by viewModel.selectedAddress.collectAsStateWithLifecycle()
+    val selectedPickupPoint by viewModel.selectedPickupPoint.collectAsStateWithLifecycle()
+
+
+
 
     Column(
         modifier = modifier
@@ -193,14 +212,18 @@ fun ShoppingCart(
             .padding(
                 start = 16.dp,
                 end = 16.dp,
-                top = 14.dp,
+                top = 24.dp,
             ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = "Способ получения:",
-            style = MaterialTheme.typography.labelLarge,
 
+        SelectAddressBlock(
+            onSelectOrderType = {
+                viewModel.setOrderType(it)
+            },
+            selectedOrderType = orderType,
+            selectedAddress = selectedAddress,
+            selectedPickupPoint = selectedPickupPoint
         )
 
         LazyColumn(
@@ -623,5 +646,161 @@ fun OrderCreatedContent(
                 )
             }
         }
+    }
+}
+
+
+@SuppressLint("UnusedBoxWithConstraintsScope")
+@Composable
+private fun OrderTypeSelector(
+    modifier: Modifier = Modifier,
+    onSelectOrderType: (OrderType) -> Unit,
+    selectedOrderType: OrderType
+) {
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .clip(RoundedCornerShape(50))
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        val itemWidth = maxWidth / 2
+
+        val pillOffSet by animateDpAsState(
+            targetValue = if (selectedOrderType == OrderType.DELIVERY) 0.dp else itemWidth,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            ),
+            label = "orderTypePill")
+
+        Box(
+            modifier = Modifier
+                .offset(pillOffSet)
+                .fillMaxHeight()
+                .width(itemWidth)
+                .shadow(
+                    elevation = 2.dp,
+                    shape = RoundedCornerShape(50)
+                )
+                .background(
+                    color = Color.White,
+                    shape = RoundedCornerShape(50))
+        )
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OrderType.entries.forEach { orderType ->
+                val textColor = Color.Black
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(50))
+                        .clickable (
+                            onClick = {
+                                onSelectOrderType(orderType)
+                            },
+                            interactionSource = null,
+                            indication = null
+                          ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = orderType.desc,
+                        color = textColor,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SelectAddressBlock(
+    onSelectOrderType: (OrderType) -> Unit,
+    selectedOrderType: OrderType,
+    selectedAddress: Address?,
+    selectedPickupPoint: PickupPoint?
+
+
+){
+    var isOrderTypeSelectorScreenVisible by rememberSaveable() {
+        mutableStateOf(false)
+    }
+    val sheetState = rememberModalBottomSheetState (skipPartiallyExpanded = true)
+
+
+    Text(
+        text = "Способ получения:",
+        style = MaterialTheme.typography.labelLarge,
+        fontSize = 22.sp
+    )
+
+    OrderTypeSelector(
+        onSelectOrderType = onSelectOrderType,
+        selectedOrderType = selectedOrderType
+    )
+
+
+    if (isOrderTypeSelectorScreenVisible) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                isOrderTypeSelectorScreenVisible = false
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(top = 80.dp),
+            sheetState = sheetState
+        ) {
+            OrderTypeSelectorScreen()
+        }
+    }
+
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = {
+                isOrderTypeSelectorScreenVisible = true
+            })) {
+        Box(modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center) {
+            Row(modifier = Modifier
+                .padding(horizontal = 12.dp)) {
+
+                when (selectedOrderType) {
+                    OrderType.DELIVERY -> {
+                        val text = selectedAddress?.let { buildAddressText(it) } ?: "Выберите адрес доставки"
+                        Text(
+                            text = text,
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    OrderType.PICKUP -> {
+                        val text = selectedPickupPoint?.let { selectedPickupPoint.address }
+                            ?: "Выберите адрес самовывоза"
+                        Text(
+                            text = text,
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+                Icon(
+                    imageVector = Icons.Outlined.ArrowForwardIos,
+                    contentDescription = "Выбрать адрес",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
     }
 }

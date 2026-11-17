@@ -101,7 +101,14 @@ fun MainScaffold(
                     )
                 }
                 composable ( Screen.Orders.route ) {
-                    OrderScreen()
+                    OrderScreen(
+                        onGoToCatalog = {
+                            mainNavController.navigate(Screen.Catalog.route)
+                        },
+                        onGoBack = {
+                            mainNavController.popBackStack()
+                        }
+                    )
                 }
 
                 composable(

@@ -144,11 +144,7 @@ class CartViewModel @Inject constructor (
             initialValue = null
         )
 
-    fun clearCreatedOrder() {
-        viewModelScope.launch {
-            userSession.clearLastCreatedOrderId()
-        }
-    }
+
 
     init {
         viewModelScope.launch {
@@ -157,6 +153,12 @@ class CartViewModel @Inject constructor (
                 .collect {
                     loadCartItems()
                 }
+        }
+    }
+
+    fun clearCreatedOrder() {
+        viewModelScope.launch {
+            userSession.clearLastCreatedOrderId()
         }
     }
 
@@ -215,6 +217,12 @@ class CartViewModel @Inject constructor (
 
                 }
             }
+        }
+    }
+
+    fun setOrderType(orderType: OrderType) {
+        viewModelScope.launch {
+            checkoutPreferencesRepository.setOrderType(orderType)
         }
     }
 

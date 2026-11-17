@@ -267,7 +267,7 @@ fun CatalogSuccess(
                         )
                     }
                 }
-                null -> {
+                else -> {
 
                 }
             }

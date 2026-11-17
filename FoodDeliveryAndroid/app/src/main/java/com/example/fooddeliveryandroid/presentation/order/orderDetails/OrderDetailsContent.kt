@@ -1,12 +1,12 @@
 package com.example.fooddeliveryandroid.presentation.order.orderDetails
 
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -63,20 +64,20 @@ fun OrderDetailsContent(
         }
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp)
+    //Выключение overscroll эффекта
+    CompositionLocalProvider(
+        LocalOverscrollFactory provides null
     ) {
-
-        OrderStatusBlock(
-            activeStatus = order.status
-        )
-
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)){
+            item {
+                OrderStatusBlock(
+                    activeStatus = order.status
+                )
+            }
+
             items(items = order.items, key = {it.id}) { orderItem ->
                 OrderItemCard(
                     orderItem = orderItem,

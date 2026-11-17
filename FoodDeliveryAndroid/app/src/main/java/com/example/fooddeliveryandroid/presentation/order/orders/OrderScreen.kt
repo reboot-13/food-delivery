@@ -1,6 +1,7 @@
 package com.example.fooddeliveryandroid.presentation.order.orders
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,8 +13,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -45,24 +51,91 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun OrderScreen(
-    viewModel: OrderViewModel = hiltViewModel()
+    viewModel: OrderViewModel = hiltViewModel(),
+    onGoToCatalog: () -> Unit,
+    onGoBack: () -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
-    Scaffold() { innerPadding ->
-        when(val result = uiState.value) {
-            is OrderUIState.Error -> {
 
-            }
-            is OrderUIState.Success -> {
-                SuccessOrders(
-                    orders = result.orders,
-                    modifier = Modifier
-                        .padding(paddingValues = innerPadding))
-            }
-            is OrderUIState.Loading -> LoadingProcess()
+    when(val result = uiState.value) {
+        is OrderUIState.Error -> {
+
         }
+        is OrderUIState.Success -> {
+            Scaffold() { innerPadding ->
+
+                Column (
+                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                ){
+                    OrdersHeader( onGoBack =  onGoBack )
+                    if (result.orders.isEmpty()) {
+                        EmptyOrdersScreen(onGoToCatalog = onGoToCatalog)
+                    } else {
+                        SuccessOrders(
+                            orders = result.orders
+                        )
+                    }
+                }
+            }
+        }
+        is OrderUIState.Loading -> LoadingProcess()
     }
 
+}
+
+@Composable
+private fun EmptyOrdersScreen(onGoToCatalog: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "Заказов пока нет",
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center
+            )
+            Button(
+                onClick = onGoToCatalog,
+                modifier = Modifier.fillMaxWidth(0.6f)
+            ) {
+                Text("Сделать заказ")
+            }
+        }
+    }
+}
+
+@Composable
+private fun OrdersHeader(onGoBack: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .padding(16.dp)
+    ) {
+        IconButton (
+            onClick = onGoBack,
+            modifier = Modifier
+                .size(48.dp)
+                .align(Alignment.CenterStart)
+
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.ArrowBack,
+                contentDescription = "Назад",
+
+            )
+        }
+
+        Text(
+            text = "Заказы",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.bodyLarge,
+            fontSize = 18.sp,
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,6 +172,7 @@ private fun SuccessOrders(
     LazyColumn (
         modifier = modifier
             .padding(horizontal = 12.dp)
+
     ){
         items(items = orders, key = {it.id}) { order ->
             OrderCard(
@@ -177,7 +251,7 @@ private fun OrderStatusBlock(
 ) {
     Surface(
         shape = RoundedCornerShape(32.dp),
-        color = MaterialTheme.colorScheme.secondary,
+        color = MaterialTheme.colorScheme.primary,
         modifier = modifier
             .height(32.dp)
             .fillMaxWidth(0.4f)

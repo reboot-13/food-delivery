@@ -57,8 +57,7 @@ fun AddAddressScreen(
     }
     Scaffold() { innerPadding ->
         Box(modifier = modifier
-            .fillMaxSize()
-            .padding(innerPadding)) {
+            .fillMaxSize()) {
             AddressMapPicker(
                 modifier = modifier.fillMaxSize(),
                 onMapCenterChanged = viewModel::onMapCenterChanged,
@@ -90,6 +89,8 @@ fun AddAddressScreen(
                             uiState.selection
                         )
                     },
+                    modifier = Modifier
+                        .padding(bottom = innerPadding.calculateBottomPadding())
                 )
             }
         }
@@ -131,7 +132,6 @@ fun AddressMapBottomPanel(
     }
 
     Surface (
-        modifier = modifier,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         color = MaterialTheme.colorScheme.background,
         shadowElevation = 8.dp
@@ -164,7 +164,7 @@ fun AddressMapBottomPanel(
                         onContinueToForm = onContinueToForm
                     )
 
-                    EnterAddressManuallyButton (onEnterManually = onEnterManually)
+                    EnterAddressManuallyButton (onEnterManually = onEnterManually, modifier = modifier)
                 }
 
                 else -> {
@@ -173,7 +173,7 @@ fun AddressMapBottomPanel(
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = 18.sp
                     )
-                    EnterAddressManuallyButton (onEnterManually = onEnterManually)
+                    EnterAddressManuallyButton (onEnterManually = onEnterManually, modifier = modifier)
                 }
             }
 
@@ -199,13 +199,14 @@ fun AddAddressButton(
 
 @Composable
 fun EnterAddressManuallyButton(
+    modifier: Modifier = Modifier,
     onEnterManually: () -> Unit,
 ) {
     Button(
         onClick = {
             onEnterManually()
         },
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(0.8f),
         colors = ButtonColors(
             contentColor = MaterialTheme.colorScheme.onSurface,
@@ -214,6 +215,7 @@ fun EnterAddressManuallyButton(
             disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
         )
     ) {
-        Text("Ввести адрес вручную")
+        Text(
+            text = "Ввести адрес вручную")
     }
 }
